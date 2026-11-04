@@ -1,0 +1,27 @@
+{
+  "name": "fcb-fan-ai",
+  "private": true,
+  "description": "Three Gemini-powered MVPs for the FC Bayern Fan AI-DEATION: FCB Fair Seat (transparent ballot + smart seat recycling) and the Matchday Journey Agent.",
+  "license": "MIT",
+  "packageManager": "pnpm@10.28.0",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @fcb/web dev",
+    "build": "pnpm --filter @fcb/web build",
+    "start": "pnpm --filter @fcb/web start",
+    "lint": "pnpm -r --parallel lint",
+    "typecheck": "pnpm -r --parallel typecheck",
+    "test": "pnpm -r test",
+    "test:coverage": "pnpm -r test:coverage",
+    "e2e": "pnpm --filter @fcb/web e2e",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "verify": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build"
+  },
+  "devDependencies": {
+    "prettier": "3.6.2",
+    "typescript": "6.0.3"
+  }
+}
