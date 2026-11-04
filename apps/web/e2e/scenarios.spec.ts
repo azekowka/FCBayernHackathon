@@ -16,7 +16,9 @@ const room = (name: string) => `${name}-${Math.random().toString(36).slice(2, 8)
 
 test.describe('every page', () => {
   for (const path of PAGES) {
-    test(`${path} renders cleanly and passes axe (no serious/critical issues)`, async ({ page }) => {
+    test(`${path} renders cleanly and passes axe (no serious/critical issues)`, async ({
+      page,
+    }) => {
       const errors = collectErrors(page);
       await page.goto(path);
       await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
@@ -32,7 +34,9 @@ test.describe('every page', () => {
     test(`${path} has no horizontal overflow`, async ({ page }) => {
       await page.goto(path);
       await page.waitForLoadState('networkidle');
-      const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+      const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - window.innerWidth,
+      );
       expect(overflow).toBeLessThanOrEqual(1);
     });
   }
@@ -51,7 +55,9 @@ test('hub: the three products are one click away', async ({ page }) => {
   }
 });
 
-test('ballot: member compares odds, applies smart, runs and verifies a draw, reads the letter', async ({ page }) => {
+test('ballot: member compares odds, applies smart, runs and verifies a draw, reads the letter', async ({
+  page,
+}) => {
   const errors = collectErrors(page);
   await page.goto('/ballot');
   const odds = page.locator('#odds');
@@ -96,7 +102,9 @@ test('recycling: forecast map, layer switch and simulation are explorable', asyn
   await expect(page.getByText('Extra fans in the Arena')).toBeVisible();
 });
 
-test('live: Sepp releases on his phone, Mia passes, Jonas accepts on theirs', async ({ browser }) => {
+test('live: Sepp releases on his phone, Mia passes, Jonas accepts on theirs', async ({
+  browser,
+}) => {
   const id = room('e2e');
   const ctx = await browser.newContext();
   const [sepp, mia, jonas] = await Promise.all([ctx.newPage(), ctx.newPage(), ctx.newPage()]);
@@ -119,7 +127,9 @@ test('live: Sepp releases on his phone, Mia passes, Jonas accepts on theirs', as
   await expect(jonas.getByText(/A Südkurve spot just opened up/)).toBeVisible({ timeout: 15_000 });
   await jonas.getByRole('button', { name: 'Accept' }).click();
   await expect(jonas.getByText(/You’re in, Jonas!/)).toBeVisible();
-  await expect(sepp.getByText(/Jonas from Garching will be in your spot/)).toBeVisible({ timeout: 15_000 });
+  await expect(sepp.getByText(/Jonas from Garching will be in your spot/)).toBeVisible({
+    timeout: 15_000,
+  });
   await ctx.close();
 });
 
@@ -132,35 +142,53 @@ test('live: a holder who is coming keeps the seat', async ({ page }) => {
 });
 
 test('live: stage view shows the engine explaining every skip', async ({ page }, info) => {
-  test.skip(info.project.name === 'mobile', 'Three-column stage layout is a desktop presentation view');
+  test.skip(
+    info.project.name === 'mobile',
+    'Three-column stage layout is a desktop presentation view',
+  );
   await page.goto(`/live?room=${room('stage')}`);
   await expect(page.getByText(/Live · SSE|Polling/)).toBeVisible({ timeout: 15_000 });
   await page.getByRole('button', { name: 'Release my seat' }).click();
   await page.getByRole('button', { name: /Release seat to waitlist/ }).click();
-  await expect(page.getByText('#1 Familie Huber skipped — needs 4 seats together.')).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByText('#1 Familie Huber skipped — needs 4 seats together.')).toBeVisible({
+    timeout: 15_000,
+  });
   await expect(page.getByText('#2 Elif Yılmaz skipped — wants a seated seat.')).toBeVisible();
   await expect(page.getByText(/Offer → #3 Mia Schneider/)).toBeVisible();
 });
 
-test('journey: free text becomes a plan, a strike re-plans it, questions get grounded answers', async ({ page }) => {
+test('journey: free text becomes a plan, a strike re-plans it, questions get grounded answers', async ({
+  page,
+}) => {
   const errors = collectErrors(page);
   await page.goto('/journey');
-  await page.getByLabel('Describe your matchday').fill('From Augsburg by train with my kids, Block 214, we want food before the choreo');
+  await page
+    .getByLabel('Describe your matchday')
+    .fill('From Augsburg by train with my kids, Block 214, we want food before the choreo');
   await page.getByRole('button', { name: /Plan it for me/ }).click();
   await expect(page.getByText('Block 214', { exact: true })).toBeVisible();
   await expect(page.getByLabel('Your block')).toHaveValue('214');
   await expect(page.getByText(/In your seat — Block 214/)).toBeVisible();
-  await expect(page.getByText(/^Leave Augsburg Hbf at \d{2}:\d{2}/)).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByText(/^Leave Augsburg Hbf at \d{2}:\d{2}/)).toBeVisible({
+    timeout: 15_000,
+  });
 
   await page.getByRole('button', { name: 'Public transport strike' }).click();
-  await expect(page.getByRole('alert').filter({ hasText: 'Strike — no U-Bahn today' })).toBeVisible();
+  await expect(
+    page.getByRole('alert').filter({ hasText: 'Strike — no U-Bahn today' }),
+  ).toBeVisible();
   await expect(page.getByText(/isn't an option right now/)).toBeVisible();
   await expect(page.getByText(/^Heads-up: Strike/)).toBeVisible({ timeout: 15_000 });
 
   await page.getByRole('button', { name: 'Public transport strike' }).click();
   await page.getByRole('button', { name: 'Where are the shortest toilet queues?' }).click();
-  await expect(page.getByText(/Half-time \(\d{2}:\d{2}\): Shortest queue/)).toBeVisible({ timeout: 15_000 });
-  await expect(page.getByRole('link', { name: /Open route in Google Maps/ })).toHaveAttribute('href', /google\.com\/maps\/dir/);
+  await expect(page.getByText(/Half-time \(\d{2}:\d{2}\): Shortest queue/)).toBeVisible({
+    timeout: 15_000,
+  });
+  await expect(page.getByRole('link', { name: /Open route in Google Maps/ })).toHaveAttribute(
+    'href',
+    /google\.com\/maps\/dir/,
+  );
   expect(errors).toEqual([]);
 });
 
@@ -170,7 +198,9 @@ test('api: health is public, inputs are validated', async ({ request }) => {
   expect(await health.json()).toMatchObject({ ok: true, ai: { mode: 'demo' } });
   const bad = await request.post('/api/ballot/commit', { data: { fixtureId: '' } });
   expect(bad.status()).toBe(400);
-  const closed = await request.post('/api/ballot/commit', { data: { fixtureId: 'fcb-scf-2026-11-07' } });
+  const closed = await request.post('/api/ballot/commit', {
+    data: { fixtureId: 'fcb-scf-2026-11-07' },
+  });
   expect(closed.status()).toBe(400);
   const headers = health.headers();
   expect(headers['x-content-type-options']).toBe('nosniff');

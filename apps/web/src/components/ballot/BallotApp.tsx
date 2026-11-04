@@ -96,7 +96,9 @@ export function BallotApp() {
                           </span>
                         )}
                       </span>
-                      <span className={cn('block truncate text-xs', active ? 'text-fg-2' : 'text-fg-3')}>
+                      <span
+                        className={cn('block truncate text-xs', active ? 'text-fg-2' : 'text-fg-3')}
+                      >
                         {m.city} · member since {m.memberSince}
                       </span>
                     </span>

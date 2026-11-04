@@ -127,16 +127,16 @@ export function ColumnChart({
       )}
       <div className="sr-only">
         <table>
-        <caption>{title}</caption>
-        <tbody>
-          {data.map((d) => (
-            <tr key={d.key}>
-              <th scope="row">{d.detail ?? d.label}</th>
-              <td>{format(d.value)}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+          <caption>{title}</caption>
+          <tbody>
+            {data.map((d) => (
+              <tr key={d.key}>
+                <th scope="row">{d.detail ?? d.label}</th>
+                <td>{format(d.value)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </figure>
   );

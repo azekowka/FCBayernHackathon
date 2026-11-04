@@ -4,12 +4,17 @@ import { PageHeader } from '@/components/ui/primitives';
 
 export const metadata: Metadata = {
   title: 'Stage demo — two phones, one seat',
-  description: 'Sepp releases his Südkurve spot in a Gemini chat; Mia from the waitlist gets it seconds later.',
+  description:
+    'Sepp releases his Südkurve spot in a Gemini chat; Mia from the waitlist gets it seconds later.',
 };
 
 export const dynamic = 'force-dynamic';
 
-export default async function LivePage({ searchParams }: { searchParams: Promise<{ room?: string }> }) {
+export default async function LivePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ room?: string }>;
+}) {
   const { room } = await searchParams;
   const roomId = room && /^[a-z0-9-]{1,24}$/.test(room) ? room : 'stage';
   return (

@@ -20,8 +20,9 @@ const Action = z.discriminatedUnion('action', [
   z.object({ action: z.literal('reset'), language: z.enum(['en', 'de']).optional() }),
 ]);
 
-export const GET = handler({ name: 'live-read', capacity: 120, refillPerMinute: 240 }, async (_req: Request, ctx: Ctx) =>
-  json((await roomFrom(ctx)).snapshot()),
+export const GET = handler(
+  { name: 'live-read', capacity: 120, refillPerMinute: 240 },
+  async (_req: Request, ctx: Ctx) => json((await roomFrom(ctx)).snapshot()),
 );
 
 export const POST = handler(AI_BUCKET, async (req: Request, ctx: Ctx) => {

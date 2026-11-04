@@ -15,7 +15,12 @@ interface Props {
   fixtureLabel: string;
   kickoffLabel: string;
   context: { rain: number; temperature: number; weekday: string };
-  forecast: { blocks: BlockRiskView[]; expectedAbsent: number; seasonSeats: number; nudgeable: number };
+  forecast: {
+    blocks: BlockRiskView[];
+    expectedAbsent: number;
+    seasonSeats: number;
+    nudgeable: number;
+  };
   sim: { today: SimulationResult; fairseat: SimulationResult };
   sepp: { probability: number; contributions: Contribution[] };
   offerWindows: { label: string; minutes: number }[];
@@ -24,11 +29,21 @@ interface Props {
 
 type Layer = 'risk' | 'recovered';
 
-export function RecyclingDashboard({ fixtureLabel, kickoffLabel, context, forecast, sim, sepp, offerWindows, behaviour }: Props) {
+export function RecyclingDashboard({
+  fixtureLabel,
+  kickoffLabel,
+  context,
+  forecast,
+  sim,
+  sepp,
+  offerWindows,
+  behaviour,
+}: Props) {
   const [layer, setLayer] = useState<Layer>('risk');
   const [selected, setSelected] = useState<string>('112');
   const block = forecast.blocks.find((b) => b.id === selected);
-  const extraFans = sim.fairseat.refilledSeats + sim.fairseat.donatedSeats - sim.today.refilledSeats;
+  const extraFans =
+    sim.fairseat.refilledSeats + sim.fairseat.donatedSeats - sim.today.refilledSeats;
   const recoveredFair = sim.fairseat.recoveredShare;
 
   const mapBlocks: MapBlock[] = forecast.blocks;
@@ -49,15 +64,38 @@ export function RecyclingDashboard({ fixtureLabel, kickoffLabel, context, foreca
   };
 
   const toHours = (r: SimulationResult) => r.series.map((p) => ({ x: p.at / 60, y: p.refilled }));
-  const maxSeats = Math.max(...sim.fairseat.series.map((p) => p.refilled), ...sim.today.series.map((p) => p.refilled));
+  const maxSeats = Math.max(
+    ...sim.fairseat.series.map((p) => p.refilled),
+    ...sim.today.series.map((p) => p.refilled),
+  );
 
   return (
     <div className="flex flex-col gap-6">
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
-        <Stat label="Season seats likely empty" value={fmtInt(forecast.expectedAbsent)} sub={`of ${fmtInt(forecast.seasonSeats)} season seats`} tone="red" />
-        <Stat label="Opted-in fans Gemini would nudge" value={fmtInt(forecast.nudgeable)} sub="risk ≥ 30%, opted in" tone="amber" />
-        <Stat label="Back in use — today" value={fmtPct(sim.today.recoveredShare)} sub={`${fmtInt(sim.today.refilledSeats)} seats via the exchange`} tone="violet" />
-        <Stat label="Back in use — Fair Seat" value={fmtPct(recoveredFair)} sub={`${fmtInt(sim.fairseat.refilledSeats + sim.fairseat.donatedSeats)} seats incl. youth gifts`} tone="teal" />
+        <Stat
+          label="Season seats likely empty"
+          value={fmtInt(forecast.expectedAbsent)}
+          sub={`of ${fmtInt(forecast.seasonSeats)} season seats`}
+          tone="red"
+        />
+        <Stat
+          label="Opted-in fans Gemini would nudge"
+          value={fmtInt(forecast.nudgeable)}
+          sub="risk ≥ 30%, opted in"
+          tone="amber"
+        />
+        <Stat
+          label="Back in use — today"
+          value={fmtPct(sim.today.recoveredShare)}
+          sub={`${fmtInt(sim.today.refilledSeats)} seats via the exchange`}
+          tone="violet"
+        />
+        <Stat
+          label="Back in use — Fair Seat"
+          value={fmtPct(recoveredFair)}
+          sub={`${fmtInt(sim.fairseat.refilledSeats + sim.fairseat.donatedSeats)} seats incl. youth gifts`}
+          tone="teal"
+        />
         <Stat
           label="Extra fans in the Arena"
           value={`+${fmtInt(extraFans)}`}
@@ -85,7 +123,11 @@ export function RecyclingDashboard({ fixtureLabel, kickoffLabel, context, foreca
           }
         >
           <StadiumMap
-            title={layer === 'risk' ? 'Predicted share of season seats left empty, per block' : 'Seats brought back into use with Fair Seat, per block'}
+            title={
+              layer === 'risk'
+                ? 'Predicted share of season seats left empty, per block'
+                : 'Seats brought back into use with Fair Seat, per block'
+            }
             blocks={mapBlocks}
             fill={fill}
             highlightId={selected}
@@ -100,7 +142,8 @@ export function RecyclingDashboard({ fixtureLabel, kickoffLabel, context, foreca
                     <p className="text-fg-3">No season tickets ({b.kind})</p>
                   ) : (
                     <p className="tabular text-fg-2">
-                      {fmtPct(b.risk, 1)} risk · ≈{Math.round(b.expectedAbsent)} empty of {fmtInt(b.seasonSeats)}
+                      {fmtPct(b.risk, 1)} risk · ≈{Math.round(b.expectedAbsent)} empty of{' '}
+                      {fmtInt(b.seasonSeats)}
                     </p>
                   )}
                 </>
@@ -111,15 +154,23 @@ export function RecyclingDashboard({ fixtureLabel, kickoffLabel, context, foreca
                 <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[11px] text-fg-3">
                   {RISK_STEPS.map((c, i) => (
                     <span key={c} className="inline-flex items-center gap-1.5">
-                      <span aria-hidden className="size-3 rounded-sm" style={{ background: c }} /> {scale.label(i)}
+                      <span aria-hidden className="size-3 rounded-sm" style={{ background: c }} />{' '}
+                      {scale.label(i)}
                     </span>
                   ))}
                   <span className="inline-flex items-center gap-1.5">
-                    <span aria-hidden className="size-3 rounded-sm ring-1 ring-line-strong" style={{ background: NO_SEASON }} /> no season seats
+                    <span
+                      aria-hidden
+                      className="size-3 rounded-sm ring-1 ring-line-strong"
+                      style={{ background: NO_SEASON }}
+                    />{' '}
+                    no season seats
                   </span>
                 </div>
               ) : (
-                <p className="text-center text-[11px] text-fg-3">Brighter teal = more seats back in use in that block</p>
+                <p className="text-center text-[11px] text-fg-3">
+                  Brighter teal = more seats back in use in that block
+                </p>
               )
             }
           />
@@ -127,7 +178,9 @@ export function RecyclingDashboard({ fixtureLabel, kickoffLabel, context, foreca
             <div className="mt-4 flex items-center justify-between rounded-xl border hairline bg-ink-800/60 px-4 py-3 text-sm">
               <span className="font-medium text-fg">{block.label}</span>
               <span className="tabular text-fg-2">
-                {block.seasonSeats ? `${fmtPct(block.risk, 1)} · ≈${Math.round(block.expectedAbsent)} seats` : 'no season seats'}
+                {block.seasonSeats
+                  ? `${fmtPct(block.risk, 1)} · ≈${Math.round(block.expectedAbsent)} seats`
+                  : 'no season seats'}
               </span>
             </div>
           )}
@@ -141,8 +194,18 @@ export function RecyclingDashboard({ fixtureLabel, kickoffLabel, context, foreca
             <LineChart
               title="Cumulative seats back in use before kick-off"
               series={[
-                { key: 'fair', label: 'Fair Seat (nudge + waitlist)', color: 'var(--color-viz-teal)', points: toHours(sim.fairseat) },
-                { key: 'today', label: 'Today (Ticket Exchange)', color: 'var(--color-viz-violet)', points: toHours(sim.today) },
+                {
+                  key: 'fair',
+                  label: 'Fair Seat (nudge + waitlist)',
+                  color: 'var(--color-viz-teal)',
+                  points: toHours(sim.fairseat),
+                },
+                {
+                  key: 'today',
+                  label: 'Today (Ticket Exchange)',
+                  color: 'var(--color-viz-violet)',
+                  points: toHours(sim.today),
+                },
               ]}
               xTicks={[-72, -48, -24, 0]}
               formatX={(h) => (Math.round(h) === 0 ? 'Kick-off' : `T−${Math.abs(Math.round(h))} h`)}
@@ -153,40 +216,61 @@ export function RecyclingDashboard({ fixtureLabel, kickoffLabel, context, foreca
             <div className="mt-4 grid gap-3 sm:grid-cols-3">
               <p className="rounded-xl bg-ink-800/60 p-3 text-xs text-fg-3">
                 <Timer className="mb-1 size-4 text-ok" aria-hidden />
-                Median time from release to a new fan: <span className="font-semibold text-fg">{sim.fairseat.medianMinutesToRefill ?? '—'} min</span> (today{' '}
-                {sim.today.medianMinutesToRefill ?? '—'} min).
+                Median time from release to a new fan:{' '}
+                <span className="font-semibold text-fg">
+                  {sim.fairseat.medianMinutesToRefill ?? '—'} min
+                </span>{' '}
+                (today {sim.today.medianMinutesToRefill ?? '—'} min).
               </p>
               <p className="rounded-xl bg-ink-800/60 p-3 text-xs text-fg-3">
                 <Users className="mb-1 size-4 text-ok" aria-hidden />
-                <span className="font-semibold text-fg">{fmtInt(sim.fairseat.fansServed)}</span> waitlist fans seated, from{' '}
-                {fmtInt(sim.fairseat.offersMade)} one-tap offers.
+                <span className="font-semibold text-fg">
+                  {fmtInt(sim.fairseat.fansServed)}
+                </span>{' '}
+                waitlist fans seated, from {fmtInt(sim.fairseat.offersMade)} one-tap offers.
               </p>
               <p className="rounded-xl bg-ink-800/60 p-3 text-xs text-fg-3">
                 <Gift className="mb-1 size-4 text-ok" aria-hidden />
-                <span className="font-semibold text-fg">{fmtInt(sim.fairseat.donatedSeats)}</span> seats gifted to youth fan clubs by their holders.
+                <span className="font-semibold text-fg">
+                  {fmtInt(sim.fairseat.donatedSeats)}
+                </span>{' '}
+                seats gifted to youth fan clubs by their holders.
               </p>
             </div>
           </Panel>
 
-          <Panel title="Why the app asks Sepp" subtitle="Block 112 · season ticket since 1998 · explainable, on-device estimate">
+          <Panel
+            title="Why the app asks Sepp"
+            subtitle="Block 112 · season ticket since 1998 · explainable, on-device estimate"
+          >
             <div className="flex items-baseline justify-between">
               <p className="text-sm text-fg-2">Chance his Südkurve spot stays empty</p>
-              <p className="display tabular text-3xl font-bold text-fg">{fmtPct(sepp.probability)}</p>
+              <p className="display tabular text-3xl font-bold text-fg">
+                {fmtPct(sepp.probability)}
+              </p>
             </div>
             <ul className="mt-3 space-y-2">
               {sepp.contributions.map((c) => {
                 const max = sepp.contributions[0]?.effect ?? 1;
                 return (
-                  <li key={c.feature} className="grid grid-cols-[minmax(0,1fr)_120px] items-center gap-3 text-xs">
+                  <li
+                    key={c.feature}
+                    className="grid grid-cols-[minmax(0,1fr)_120px] items-center gap-3 text-xs"
+                  >
                     <span className="truncate text-fg-2">{c.label}</span>
-                    <span className="h-2 rounded-full bg-viz-red" style={{ width: `${Math.max(6, (c.effect / max) * 100)}%` }} aria-hidden />
+                    <span
+                      className="h-2 rounded-full bg-viz-red"
+                      style={{ width: `${Math.max(6, (c.effect / max) * 100)}%` }}
+                      aria-hidden
+                    />
                   </li>
                 );
               })}
             </ul>
             <p className="mt-4 flex items-start gap-2 text-xs text-fg-3">
               <Lock className="mt-0.5 size-3.5 shrink-0" aria-hidden />
-              Opt-in signals only. Designed to run on the phone — the club learns nothing unless Sepp taps “release”.
+              Opt-in signals only. Designed to run on the phone — the club learns nothing unless
+              Sepp taps “release”.
             </p>
           </Panel>
         </div>
@@ -196,19 +280,24 @@ export function RecyclingDashboard({ fixtureLabel, kickoffLabel, context, foreca
         <Panel title="Published matching rules">
           <ul className="space-y-2.5 text-sm text-fg-2">
             <li className="flex gap-2">
-              <Scale className="mt-0.5 size-4 shrink-0 text-bad" aria-hidden /> Next in line is the ballot’s own verifiable draw order.
+              <Scale className="mt-0.5 size-4 shrink-0 text-bad" aria-hidden /> Next in line is the
+              ballot’s own verifiable draw order.
             </li>
             <li className="flex gap-2">
-              <Users className="mt-0.5 size-4 shrink-0 text-bad" aria-hidden /> Groups are never split; leftover seats are re-listed instantly.
+              <Users className="mt-0.5 size-4 shrink-0 text-bad" aria-hidden /> Groups are never
+              split; leftover seats are re-listed instantly.
             </li>
             <li className="flex gap-2">
-              <Timer className="mt-0.5 size-4 shrink-0 text-bad" aria-hidden /> Only fans who can still reach the Arena in time get an offer.
+              <Timer className="mt-0.5 size-4 shrink-0 text-bad" aria-hidden /> Only fans who can
+              still reach the Arena in time get an offer.
             </li>
             <li className="flex gap-2">
-              <ShieldCheck className="mt-0.5 size-4 shrink-0 text-bad" aria-hidden /> Accessible spaces go to fans who need them first.
+              <ShieldCheck className="mt-0.5 size-4 shrink-0 text-bad" aria-hidden /> Accessible
+              spaces go to fans who need them first.
             </li>
             <li className="flex gap-2">
-              <Badge tone="teal">Face value</Badge> No fees, no surge — releasing keeps your loyalty credit.
+              <Badge tone="teal">Face value</Badge> No fees, no surge — releasing keeps your loyalty
+              credit.
             </li>
           </ul>
         </Panel>
@@ -231,8 +320,12 @@ export function RecyclingDashboard({ fixtureLabel, kickoffLabel, context, foreca
             <thead>
               <tr className="text-fg-3">
                 <th scope="col" className="pb-2 text-left font-medium" />
-                <th scope="col" className="pb-2 text-right font-medium">Today</th>
-                <th scope="col" className="pb-2 text-right font-medium">Fair Seat</th>
+                <th scope="col" className="pb-2 text-right font-medium">
+                  Today
+                </th>
+                <th scope="col" className="pb-2 text-right font-medium">
+                  Fair Seat
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-line">
@@ -247,14 +340,18 @@ export function RecyclingDashboard({ fixtureLabel, kickoffLabel, context, foreca
               ))}
             </tbody>
           </table>
-          <p className="mt-3 text-xs text-fg-3">Pilot: one low-demand home match, 500 opt-in season-ticket holders.</p>
+          <p className="mt-3 text-xs text-fg-3">
+            Pilot: one low-demand home match, 500 opt-in season-ticket holders.
+          </p>
         </Panel>
       </div>
 
       <div className="card flex flex-col items-start justify-between gap-4 p-6 md:flex-row md:items-center">
         <div>
           <p className="display text-2xl font-bold">See it happen on two phones</p>
-          <p className="text-sm text-fg-2">Sepp releases his Südkurve spot in a Gemini chat — Mia gets the offer seconds later.</p>
+          <p className="text-sm text-fg-2">
+            Sepp releases his Südkurve spot in a Gemini chat — Mia gets the offer seconds later.
+          </p>
         </div>
         <ButtonLink href="/live" size="lg">
           Open the stage demo <ArrowRight className="size-4" aria-hidden />

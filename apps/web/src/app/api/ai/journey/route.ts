@@ -1,4 +1,9 @@
-import { SUPPORTED_LANGUAGES, answerJourneyQuestion, narrateJourney, parseJourneyRequest } from '@fcb/ai';
+import {
+  SUPPORTED_LANGUAGES,
+  answerJourneyQuestion,
+  narrateJourney,
+  parseJourneyRequest,
+} from '@fcb/ai';
 import { ORIGINS, getBlock, getOrigin, planJourney, type JourneyRequest } from '@fcb/core';
 import { z } from 'zod';
 import { getAi } from '@/lib/server/ai';
@@ -29,7 +34,12 @@ const Request = z.object({
 const Body = z.discriminatedUnion('action', [
   z.object({ action: z.literal('parse'), text: z.string().trim().min(1).max(600) }),
   z.object({ action: z.literal('narrate'), request: Request, language: Lang }),
-  z.object({ action: z.literal('ask'), request: Request, question: z.string().trim().min(1).max(300), language: Lang }),
+  z.object({
+    action: z.literal('ask'),
+    request: Request,
+    question: z.string().trim().min(1).max(300),
+    language: Lang,
+  }),
 ]);
 
 function plan(req: JourneyRequest) {
@@ -46,10 +56,23 @@ export const POST = handler(AI_BUCKET, async (req: Request) => {
   const body = await readJson(req, Body);
   const ai = getAi();
   if (body.action === 'parse') {
-    return json(await parseJourneyRequest(ai, body.text, ORIGINS.map((o) => ({ id: o.id, label: o.label, keywords: o.keywords }))));
+    return json(
+      await parseJourneyRequest(
+        ai,
+        body.text,
+        ORIGINS.map((o) => ({ id: o.id, label: o.label, keywords: o.keywords })),
+      ),
+    );
   }
   const p = plan(body.request as JourneyRequest);
   if (body.action === 'narrate') return json(await narrateJourney(ai, p.facts, body.language));
   const timeline = p.timeline.map((s) => ({ clock: s.clock, title: s.title, detail: s.detail }));
-  return json(await answerJourneyQuestion(ai, { question: body.question, facts: p.facts, timeline, language: body.language }));
+  return json(
+    await answerJourneyQuestion(ai, {
+      question: body.question,
+      facts: p.facts,
+      timeline,
+      language: body.language,
+    }),
+  );
 });

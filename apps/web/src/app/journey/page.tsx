@@ -4,7 +4,8 @@ import { PageHeader } from '@/components/ui/primitives';
 
 export const metadata: Metadata = {
   title: 'Vom Sofa bis zum Sitz — Matchday Journey Agent',
-  description: 'When to leave, how full the U6 will be, the quickest gate and kiosk, and a staggered return that skips the crush.',
+  description:
+    'When to leave, how full the U6 will be, the quickest gate and kiosk, and a staggered return that skips the crush.',
 };
 
 export default function JourneyPage() {

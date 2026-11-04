@@ -1,6 +1,17 @@
 'use client';
 
-import { ArrowRight, CircleCheck, Gift, Info, Radio, RotateCcw, SkipForward, Smartphone, Unlock, X } from 'lucide-react';
+import {
+  ArrowRight,
+  CircleCheck,
+  Gift,
+  Info,
+  Radio,
+  RotateCcw,
+  SkipForward,
+  Smartphone,
+  Unlock,
+  X,
+} from 'lucide-react';
 import { useState } from 'react';
 import { Segmented } from '@/components/ui/controls';
 import { Badge, Button, Panel } from '@/components/ui/primitives';
@@ -37,17 +48,29 @@ export function StageDemo({ room }: { room: string }) {
   }
 
   const active = state.fans.find((f) => f.offer) ?? state.fans.find((f) => f.ticket);
-  const fan = state.fans.find((f) => f.id === fanChoice) ?? active ?? state.fans.find((f) => f.id === 'mia') ?? state.fans[0];
+  const fan =
+    state.fans.find((f) => f.id === fanChoice) ??
+    active ??
+    state.fans.find((f) => f.id === 'mia') ??
+    state.fans[0];
 
   return (
     <div className="flex flex-col gap-5">
       <div className="card flex flex-wrap items-center justify-between gap-3 px-4 py-3">
         <div className="flex flex-wrap items-center gap-2 text-sm">
-          <Badge tone={connection === 'live' ? 'teal' : connection === 'polling' ? 'amber' : 'neutral'}>
-            <Radio className="size-3" aria-hidden /> {connection === 'live' ? 'Live · SSE' : connection === 'polling' ? 'Polling' : 'Connecting'}
+          <Badge
+            tone={connection === 'live' ? 'teal' : connection === 'polling' ? 'amber' : 'neutral'}
+          >
+            <Radio className="size-3" aria-hidden />{' '}
+            {connection === 'live'
+              ? 'Live · SSE'
+              : connection === 'polling'
+                ? 'Polling'
+                : 'Connecting'}
           </Badge>
           <span className="text-fg-3">
-            Room <span className="font-mono text-fg-2">{room}</span> · matchday clock <span className="tabular text-fg">{state.clock}</span>
+            Room <span className="font-mono text-fg-2">{room}</span> · matchday clock{' '}
+            <span className="tabular text-fg">{state.clock}</span>
           </span>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -61,19 +84,37 @@ export function StageDemo({ room }: { room: string }) {
               { value: 'de', label: 'DE' },
             ]}
           />
-          <Button size="sm" variant="secondary" onClick={() => send({ action: 'reset', language: state.language })} disabled={busy}>
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={() => send({ action: 'reset', language: state.language })}
+            disabled={busy}
+          >
             <RotateCcw className="size-3.5" aria-hidden /> Reset demo
           </Button>
-          <a className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs text-fg-3 hover:text-fg" href={`/live/sepp?room=${room}`} target="_blank" rel="noreferrer">
+          <a
+            className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs text-fg-3 hover:text-fg"
+            href={`/live/sepp?room=${room}`}
+            target="_blank"
+            rel="noreferrer"
+          >
             <Smartphone className="size-3.5" aria-hidden /> Sepp’s phone
           </a>
-          <a className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs text-fg-3 hover:text-fg" href={`/live/mia?room=${room}`} target="_blank" rel="noreferrer">
+          <a
+            className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs text-fg-3 hover:text-fg"
+            href={`/live/mia?room=${room}`}
+            target="_blank"
+            rel="noreferrer"
+          >
             <Smartphone className="size-3.5" aria-hidden /> Mia’s phone
           </a>
         </div>
       </div>
       {error && (
-        <p role="alert" className="rounded-xl border border-fcb/40 bg-fcb/10 px-3 py-2 text-sm text-bad">
+        <p
+          role="alert"
+          className="rounded-xl border border-fcb/40 bg-fcb/10 px-3 py-2 text-sm text-bad"
+        >
           {error}
         </p>
       )}
@@ -97,7 +138,11 @@ export function StageDemo({ room }: { room: string }) {
         </div>
 
         <div className={cn('min-w-0', view !== 'engine' && 'hidden xl:block')}>
-          <Panel title="Matching engine" subtitle="The same deterministic engine as the simulation — every step logged" bodyClassName="p-0">
+          <Panel
+            title="Matching engine"
+            subtitle="The same deterministic engine as the simulation — every step logged"
+            bodyClassName="p-0"
+          >
             <ol className="max-h-[360px] space-y-0 overflow-y-auto px-5 py-3" aria-live="polite">
               {state.events.map((e) => {
                 const Icon = EVENT_ICON[e.kind];
@@ -106,7 +151,13 @@ export function StageDemo({ room }: { room: string }) {
                     <span
                       className={cn(
                         'mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full',
-                        e.kind === 'accepted' || e.kind === 'gifted' ? 'bg-viz-teal/20 text-ok' : e.kind === 'skipped' ? 'bg-ink-700 text-fg-3' : e.kind === 'offered' || e.kind === 'released' ? 'bg-fcb/20 text-bad' : 'bg-ink-700 text-fg-2',
+                        e.kind === 'accepted' || e.kind === 'gifted'
+                          ? 'bg-viz-teal/20 text-ok'
+                          : e.kind === 'skipped'
+                            ? 'bg-ink-700 text-fg-3'
+                            : e.kind === 'offered' || e.kind === 'released'
+                              ? 'bg-fcb/20 text-bad'
+                              : 'bg-ink-700 text-fg-2',
                       )}
                     >
                       <Icon className="size-3.5" aria-hidden />
@@ -118,7 +169,9 @@ export function StageDemo({ room }: { room: string }) {
               })}
             </ol>
             <div className="border-t hairline px-5 py-4">
-              <p className="mb-2 text-xs font-medium text-fg-3">Waitlist for Saturday (ballot draw order)</p>
+              <p className="mb-2 text-xs font-medium text-fg-3">
+                Waitlist for Saturday (ballot draw order)
+              </p>
               <table className="w-full text-sm">
                 <thead className="sr-only">
                   <tr>
@@ -133,7 +186,14 @@ export function StageDemo({ room }: { room: string }) {
                     <tr key={f.id} className={cn(f.id === fan?.id && 'bg-ink-800/60')}>
                       <td className="tabular py-2 pr-2 text-fg-3">#{f.rank}</td>
                       <td className="py-2 pr-2">
-                        <button type="button" className="text-left font-medium text-fg hover:underline" onClick={() => { setFanChoice(f.id); setView('fan'); }}>
+                        <button
+                          type="button"
+                          className="text-left font-medium text-fg hover:underline"
+                          onClick={() => {
+                            setFanChoice(f.id);
+                            setView('fan');
+                          }}
+                        >
                           {f.name}
                         </button>
                         <span className="block text-xs text-fg-3">
@@ -142,7 +202,19 @@ export function StageDemo({ room }: { room: string }) {
                       </td>
                       <td className="py-2 pr-2 text-xs text-fg-3">{f.note}</td>
                       <td className="py-2 text-right">
-                        <Badge tone={f.status === 'seated' ? 'teal' : f.status === 'offered' ? 'red' : f.status === 'waiting' ? 'neutral' : 'amber'}>{f.status}</Badge>
+                        <Badge
+                          tone={
+                            f.status === 'seated'
+                              ? 'teal'
+                              : f.status === 'offered'
+                                ? 'red'
+                                : f.status === 'waiting'
+                                  ? 'neutral'
+                                  : 'amber'
+                          }
+                        >
+                          {f.status}
+                        </Badge>
                       </td>
                     </tr>
                   ))}
@@ -152,7 +224,9 @@ export function StageDemo({ room }: { room: string }) {
           </Panel>
         </div>
 
-        <div className={cn(view !== 'fan' && 'hidden xl:block')}>{fan && <FanPhone fan={fan} state={state} send={send} busy={busy} />}</div>
+        <div className={cn(view !== 'fan' && 'hidden xl:block')}>
+          {fan && <FanPhone fan={fan} state={state} send={send} busy={busy} />}
+        </div>
       </div>
     </div>
   );
@@ -160,7 +234,10 @@ export function StageDemo({ room }: { room: string }) {
 
 export function SinglePhone({ room, role }: { room: string; role: string }) {
   const { state, send, busy, error } = useLiveRoom(room);
-  if (!state) return <div className="skeleton mx-auto h-[700px] max-w-[380px] rounded-[2.6rem]" aria-busy="true" />;
+  if (!state)
+    return (
+      <div className="skeleton mx-auto h-[700px] max-w-[380px] rounded-[2.6rem]" aria-busy="true" />
+    );
   const fan = state.fans.find((f) => f.id === role);
   return (
     <div className="flex flex-col gap-3 py-6">
@@ -169,7 +246,13 @@ export function SinglePhone({ room, role }: { room: string; role: string }) {
           {error}
         </p>
       )}
-      {role === 'sepp' ? <HolderPhone state={state} send={send} busy={busy} /> : fan ? <FanPhone fan={fan} state={state} send={send} busy={busy} /> : <p>Unknown fan.</p>}
+      {role === 'sepp' ? (
+        <HolderPhone state={state} send={send} busy={busy} />
+      ) : fan ? (
+        <FanPhone fan={fan} state={state} send={send} busy={busy} />
+      ) : (
+        <p>Unknown fan.</p>
+      )}
     </div>
   );
 }

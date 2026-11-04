@@ -14,7 +14,11 @@ import { LiveRoom } from '@/lib/server/liveRooms';
 import { rateLimit, resetRateLimits } from '@/lib/server/rateLimit';
 
 const post = (url: string, body: unknown, headers: Record<string, string> = {}) =>
-  new Request(`http://test${url}`, { method: 'POST', body: typeof body === 'string' ? body : JSON.stringify(body), headers: { 'content-type': 'application/json', ...headers } });
+  new Request(`http://test${url}`, {
+    method: 'POST',
+    body: typeof body === 'string' ? body : JSON.stringify(body),
+    headers: { 'content-type': 'application/json', ...headers },
+  });
 
 beforeEach(() => resetRateLimits());
 
@@ -36,7 +40,9 @@ describe('http helpers', () => {
     expect(await readJson(post('/x', { a: 1 }), Schema)).toEqual({ a: 1 });
     await expect(readJson(post('/x', '{oops'), Schema)).rejects.toMatchObject({ status: 400 });
     await expect(readJson(post('/x', { a: 'no' }), Schema)).rejects.toThrow(/a:/);
-    await expect(readJson(post('/x', { a: 'x'.repeat(MAX_BODY_BYTES) }), Schema)).rejects.toMatchObject({ status: 413 });
+    await expect(
+      readJson(post('/x', { a: 'x'.repeat(MAX_BODY_BYTES) }), Schema),
+    ).rejects.toMatchObject({ status: 413 });
   });
 
   it('maps errors and rate limits to clean JSON responses', async () => {
@@ -83,20 +89,50 @@ describe('verifiable ballot API', () => {
     expect(() => commitDraw('nope')).toThrow(/Unknown fixture/);
     const c = commitDraw('fcb-wob-2026-12-05');
     expect(() => performDraw(c.drawId, c.fixtureId, 'ghost')).toThrow(/Unknown member/);
-    expect((await drawRoute(post('/api/ballot/draw', { drawId: 'not-a-uuid', fixtureId: 'x', memberId: 'y' }))).status).toBe(400);
+    expect(
+      (
+        await drawRoute(
+          post('/api/ballot/draw', { drawId: 'not-a-uuid', fixtureId: 'x', memberId: 'y' }),
+        )
+      ).status,
+    ).toBe(400);
   });
 
   it('serves commit → draw → letter over HTTP', async () => {
-    const commit = await (await commitRoute(post('/api/ballot/commit', { fixtureId: 'fcb-wob-2026-12-05' }))).json();
+    const commit = await (
+      await commitRoute(post('/api/ballot/commit', { fixtureId: 'fcb-wob-2026-12-05' }))
+    ).json();
     expect(commit.commitment).toMatch(/^[0-9a-f]{64}$/);
-    const drawRes = await drawRoute(post('/api/ballot/draw', { drawId: commit.drawId, fixtureId: commit.fixtureId, memberId: 'huber' }));
+    const drawRes = await drawRoute(
+      post('/api/ballot/draw', {
+        drawId: commit.drawId,
+        fixtureId: commit.fixtureId,
+        memberId: 'huber',
+      }),
+    );
     expect(drawRes.status).toBe(200);
     const draw = await drawRes.json();
     expect(draw.outcome.groupSize).toBe(4);
-    const letter = await (await ballotLetter(post('/api/ai/ballot-letter', { drawId: commit.drawId, fixtureId: commit.fixtureId, memberId: 'huber', language: 'de' }))).json();
+    const letter = await (
+      await ballotLetter(
+        post('/api/ai/ballot-letter', {
+          drawId: commit.drawId,
+          fixtureId: commit.fixtureId,
+          memberId: 'huber',
+          language: 'de',
+        }),
+      )
+    ).json();
     expect(letter).toMatchObject({ source: 'demo' });
     expect(letter.value).toMatch(/^Servus Anna/);
-    const bad = await ballotLetter(post('/api/ai/ballot-letter', { drawId: commit.drawId, fixtureId: commit.fixtureId, memberId: 'huber', language: 'klingon' }));
+    const bad = await ballotLetter(
+      post('/api/ai/ballot-letter', {
+        drawId: commit.drawId,
+        fixtureId: commit.fixtureId,
+        memberId: 'huber',
+        language: 'klingon',
+      }),
+    );
     expect(bad.status).toBe(400);
   });
 });
@@ -135,7 +171,9 @@ describe('live room choreography', () => {
   it('respects "I’m coming" and gifting', async () => {
     const a = new LiveRoom('keep');
     await a.init();
-    expect((await a.dispatch({ action: 'say', text: "No worries, I'm coming!" })).holder.status).toBe('kept');
+    expect(
+      (await a.dispatch({ action: 'say', text: "No worries, I'm coming!" })).holder.status,
+    ).toBe('kept');
     const b = new LiveRoom('gift');
     await b.init();
     const s = await b.dispatch({ action: 'release', mode: 'youth' });
@@ -146,28 +184,82 @@ describe('live room choreography', () => {
   it('exposes the room over HTTP with validation', async () => {
     const ctx = { params: Promise.resolve({ room: 'http-room' }) };
     expect((await liveGet(new Request('http://test/api/live/http-room'), ctx)).status).toBe(200);
-    const res = await livePost(post('/api/live/http-room', { action: 'release', mode: 'waitlist' }), ctx);
+    const res = await livePost(
+      post('/api/live/http-room', { action: 'release', mode: 'waitlist' }),
+      ctx,
+    );
     expect((await res.json()).holder.status).toBe('released');
-    expect((await livePost(post('/api/live/http-room', { action: 'explode' }), ctx)).status).toBe(400);
-    expect((await liveGet(new Request('http://test/api/live/BAD!'), { params: Promise.resolve({ room: 'BAD!' }) })).status).toBe(400);
+    expect((await livePost(post('/api/live/http-room', { action: 'explode' }), ctx)).status).toBe(
+      400,
+    );
+    expect(
+      (
+        await liveGet(new Request('http://test/api/live/BAD!'), {
+          params: Promise.resolve({ room: 'BAD!' }),
+        })
+      ).status,
+    ).toBe(400);
   });
 });
 
 describe('journey AI route', () => {
-  const request = { originId: 'marienplatz', mode: 'ubahn', blockId: '112', kickoff: '2026-11-07T15:30:00+01:00' };
+  const request = {
+    originId: 'marienplatz',
+    mode: 'ubahn',
+    blockId: '112',
+    kickoff: '2026-11-07T15:30:00+01:00',
+  };
 
   it('parses, narrates and answers from a recomputed plan', async () => {
-    const parsed = await (await aiJourney(post('/api/ai/journey', { action: 'parse', text: 'From Rosenheim with the fan club bus, Block 330' }))).json();
+    const parsed = await (
+      await aiJourney(
+        post('/api/ai/journey', {
+          action: 'parse',
+          text: 'From Rosenheim with the fan club bus, Block 330',
+        }),
+      )
+    ).json();
     expect(parsed.value).toMatchObject({ originId: 'rosenheim', mode: 'fanbus', blockId: '330' });
-    const narrated = await (await aiJourney(post('/api/ai/journey', { action: 'narrate', request, language: 'de' }))).json();
+    const narrated = await (
+      await aiJourney(post('/api/ai/journey', { action: 'narrate', request, language: 'de' }))
+    ).json();
     expect(narrated.value).toMatch(/^Los geht's um \d{2}:\d{2} ab Marienplatz/);
-    const answer = await (await aiJourney(post('/api/ai/journey', { action: 'ask', request: { ...request, disruption: 'u6-strike' }, question: 'How do I get home?' }))).json();
+    const answer = await (
+      await aiJourney(
+        post('/api/ai/journey', {
+          action: 'ask',
+          request: { ...request, disruption: 'u6-strike' },
+          question: 'How do I get home?',
+        }),
+      )
+    ).json();
     expect(answer.value).toMatch(/home around/);
   });
 
   it('rejects unknown origins, blocks and malformed requests', async () => {
-    expect((await aiJourney(post('/api/ai/journey', { action: 'narrate', request: { ...request, originId: 'mars' } }))).status).toBe(400);
-    expect((await aiJourney(post('/api/ai/journey', { action: 'narrate', request: { ...request, blockId: '999' } }))).status).toBe(400);
-    expect((await aiJourney(post('/api/ai/journey', { action: 'narrate', request: { ...request, kickoff: 'tomorrow' } }))).status).toBe(400);
+    expect(
+      (
+        await aiJourney(
+          post('/api/ai/journey', { action: 'narrate', request: { ...request, originId: 'mars' } }),
+        )
+      ).status,
+    ).toBe(400);
+    expect(
+      (
+        await aiJourney(
+          post('/api/ai/journey', { action: 'narrate', request: { ...request, blockId: '999' } }),
+        )
+      ).status,
+    ).toBe(400);
+    expect(
+      (
+        await aiJourney(
+          post('/api/ai/journey', {
+            action: 'narrate',
+            request: { ...request, kickoff: 'tomorrow' },
+          }),
+        )
+      ).status,
+    ).toBe(400);
   });
 });

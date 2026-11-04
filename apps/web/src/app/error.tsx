@@ -2,7 +2,12 @@
 
 import { Button } from '@/components/ui/primitives';
 
-export default function ErrorPage({ reset }: { error: Error & { digest?: string }; reset: () => void }) {
+export default function ErrorPage({
+  reset,
+}: {
+  error: Error & { digest?: string };
+  reset: () => void;
+}) {
   return (
     <div role="alert" className="flex flex-col items-start gap-4 py-24">
       <p className="display text-6xl font-bold text-bad">VAR check</p>

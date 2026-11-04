@@ -269,28 +269,28 @@ export function LineChart({
       {footer}
       <div className="sr-only">
         <table>
-        <caption>{title}</caption>
-        <thead>
-          <tr>
-            <th scope="col">x</th>
-            {series.map((s) => (
-              <th key={s.key} scope="col">
-                {s.label}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {(series[0]?.points ?? []).map((p, i) => (
-            <tr key={p.x}>
-              <th scope="row">{formatX(p.x)}</th>
+          <caption>{title}</caption>
+          <thead>
+            <tr>
+              <th scope="col">x</th>
               {series.map((s) => (
-                <td key={s.key}>{formatY(s.points[i]?.y ?? 0)}</td>
+                <th key={s.key} scope="col">
+                  {s.label}
+                </th>
               ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {(series[0]?.points ?? []).map((p, i) => (
+              <tr key={p.x}>
+                <th scope="row">{formatX(p.x)}</th>
+                {series.map((s) => (
+                  <td key={s.key}>{formatY(s.points[i]?.y ?? 0)}</td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </figure>
   );

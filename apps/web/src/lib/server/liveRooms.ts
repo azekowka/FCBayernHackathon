@@ -66,7 +66,13 @@ export interface LiveState {
   version: number;
   language: 'en' | 'de';
   clock: string;
-  holder: { name: string; seatLabel: string; status: SeatChatFacts['status']; chat: ChatMessage[]; quickReplies: string[] };
+  holder: {
+    name: string;
+    seatLabel: string;
+    status: SeatChatFacts['status'];
+    chat: ChatMessage[];
+    quickReplies: string[];
+  };
   fans: FanView[];
   events: EngineEvent[];
   thinking: null | 'holder' | 'fan';
@@ -127,7 +133,9 @@ export class LiveRoom {
       seatLabel: SHORT_SEAT,
       faceValue: block.faceValue,
       calendarNote: LIVE_HOLDER.calendarNote,
-      reasons: seppPrediction().contributions.slice(0, 3).map((c) => c.label),
+      reasons: seppPrediction()
+        .contributions.slice(0, 3)
+        .map((c) => c.label),
       status: this.state.holder.status,
       language: this.language,
     };
@@ -143,11 +151,27 @@ export class LiveRoom {
       version: this.state ? this.state.version + 1 : 0,
       language: this.language,
       clock: this.clock(),
-      holder: { name: LIVE_HOLDER.name, seatLabel: SEAT_LABEL, status: 'open', chat: [], quickReplies: quickReplies(this.language) },
+      holder: {
+        name: LIVE_HOLDER.name,
+        seatLabel: SEAT_LABEL,
+        status: 'open',
+        chat: [],
+        quickReplies: quickReplies(this.language),
+      },
       fans: this.fanViews(),
-      events: [{ id: ++this.seq, kind: 'info', text: 'Fri 13:30 · 26 h to kick-off. Sepp’s calendar shows Hamburg; risk model flags his seat.', clock: this.clock() }],
+      events: [
+        {
+          id: ++this.seq,
+          kind: 'info',
+          text: 'Fri 13:30 · 26 h to kick-off. Sepp’s calendar shows Hamburg; risk model flags his seat.',
+          clock: this.clock(),
+        },
+      ],
       thinking: 'holder',
-      fixture: { label: `FC Bayern vs ${fixture.opponent}`, kickoff: `Sat 7 Nov · ${clockAt(fixture.kickoff, 0)}` },
+      fixture: {
+        label: `FC Bayern vs ${fixture.opponent}`,
+        kickoff: `Sat 7 Nov · ${clockAt(fixture.kickoff, 0)}`,
+      },
     };
   }
 
@@ -177,7 +201,13 @@ export class LiveRoom {
           pending && old?.offer?.id === pending.id
             ? { ...old.offer, expiresInMinutes: pending.expiresAt - this.now }
             : pending
-              ? { id: pending.id, seatLabel: SEAT_LABEL, expiresInMinutes: pending.expiresAt - this.now, message: '', source: 'demo' as AiSource }
+              ? {
+                  id: pending.id,
+                  seatLabel: SEAT_LABEL,
+                  expiresInMinutes: pending.expiresAt - this.now,
+                  message: '',
+                  source: 'demo' as AiSource,
+                }
               : null,
         ticket: status === 'seated' ? { seatLabel: SEAT_LABEL, faceValue: block.faceValue } : null,
       };
@@ -185,7 +215,12 @@ export class LiveRoom {
   }
 
   private emit() {
-    this.state = { ...this.state, version: this.state.version + 1, clock: this.clock(), fans: this.fanViews(this.state.fans) };
+    this.state = {
+      ...this.state,
+      version: this.state.version + 1,
+      clock: this.clock(),
+      fans: this.fanViews(this.state.fans),
+    };
     for (const l of this.listeners) l(this.state);
   }
 
@@ -194,7 +229,10 @@ export class LiveRoom {
   }
 
   private event(kind: EngineEvent['kind'], text: string) {
-    this.state.events = [...this.state.events, { id: ++this.seq, kind, text, clock: this.clock() }].slice(-40);
+    this.state.events = [
+      ...this.state.events,
+      { id: ++this.seq, kind, text, clock: this.clock() },
+    ].slice(-40);
   }
 
   async init(): Promise<void> {
@@ -219,7 +257,10 @@ export class LiveRoom {
         this.tick();
         this.emit();
         const res = await interpretSeatMessage(getAi(), this.facts(), a.text);
-        const confirm = this.state.holder.status === 'open' && res.value.needsConfirmation ? (res.value.intent as 'release' | 'gift') : null;
+        const confirm =
+          this.state.holder.status === 'open' && res.value.needsConfirmation
+            ? (res.value.intent as 'release' | 'gift')
+            : null;
         this.say('assistant', res.value.reply, { source: res.source, confirm });
         if (res.value.intent === 'keep' && this.state.holder.status === 'open') {
           this.state.holder.status = 'kept';
@@ -239,12 +280,24 @@ export class LiveRoom {
       case 'release': {
         if (this.state.holder.status !== 'open') break;
         this.tick();
-        const log = this.engine.dispatch({ type: 'release', at: this.now, mode: a.mode, listing: liveListingFor() });
+        const log = this.engine.dispatch({
+          type: 'release',
+          at: this.now,
+          mode: a.mode,
+          listing: liveListingFor(),
+        });
         this.state.holder.status = a.mode === 'youth' ? 'gifted' : 'released';
-        this.event(a.mode === 'youth' ? 'gifted' : 'released', a.mode === 'youth' ? 'Seat gifted to a Munich youth fan club.' : `Released: ${SHORT_SEAT}, standing, €${block.faceValue}.`);
+        this.event(
+          a.mode === 'youth' ? 'gifted' : 'released',
+          a.mode === 'youth'
+            ? 'Seat gifted to a Munich youth fan club.'
+            : `Released: ${SHORT_SEAT}, standing, €${block.faceValue}.`,
+        );
         const offered = log.find((l) => l.kind === 'offered');
         if (offered?.fanId) this.explainSkips(offered.fanId);
-        const recipient = offered?.fanId ? LIVE_WAITLIST.find((f) => f.id === offered.fanId) : undefined;
+        const recipient = offered?.fanId
+          ? LIVE_WAITLIST.find((f) => f.id === offered.fanId)
+          : undefined;
         this.say(
           'assistant',
           releaseConfirmationTemplate({
@@ -253,24 +306,36 @@ export class LiveRoom {
             faceValue: block.faceValue,
             language: this.language,
             recipient: recipient
-              ? { city: LIVE_FAN_PROFILES[recipient.id]?.city ?? 'München', pechvogel: recipient.pechvogel, waitlistRank: recipient.rank }
+              ? {
+                  city: LIVE_FAN_PROFILES[recipient.id]?.city ?? 'München',
+                  pechvogel: recipient.pechvogel,
+                  waitlistRank: recipient.rank,
+                }
               : null,
           }),
           { source: 'demo' },
         );
         this.state.thinking = offered ? 'fan' : null;
         this.emit();
-        if (offered?.offerId && offered.fanId) await this.writeOffer(offered.offerId, offered.fanId);
+        if (offered?.offerId && offered.fanId)
+          await this.writeOffer(offered.offerId, offered.fanId);
         break;
       }
       case 'respond': {
         const pending = this.engine.pendingOfferFor(a.fanId);
         if (!pending) break;
         this.tick();
-        const log = this.engine.dispatch({ type: a.accept ? 'accept' : 'decline', at: this.now, offerId: pending.id });
+        const log = this.engine.dispatch({
+          type: a.accept ? 'accept' : 'decline',
+          at: this.now,
+          offerId: pending.id,
+        });
         const fan = LIVE_WAITLIST.find((f) => f.id === a.fanId);
         if (a.accept) {
-          this.event('accepted', `${fan?.name} accepted — ticket moved to their app wallet. Sepp gets €${block.faceValue} back.`);
+          this.event(
+            'accepted',
+            `${fan?.name} accepted — ticket moved to their app wallet. Sepp gets €${block.faceValue} back.`,
+          );
           this.say(
             'assistant',
             this.language === 'de'
@@ -306,7 +371,10 @@ export class LiveRoom {
       else if (f.travelMinutes + 15 > -this.now) why = 'can’t reach the Arena in time';
       if (why) this.event('skipped', `#${f.rank} ${f.name} skipped — ${why}.`);
     }
-    this.event('offered', `Offer → #${recipient.rank} ${recipient.name} (${LIVE_FAN_PROFILES[recipient.id]?.city}), 60 min to accept.`);
+    this.event(
+      'offered',
+      `Offer → #${recipient.rank} ${recipient.name} (${LIVE_FAN_PROFILES[recipient.id]?.city}), 60 min to accept.`,
+    );
   }
 
   private async writeOffer(offerId: string, fanId: string) {
@@ -325,7 +393,9 @@ export class LiveRoom {
       language: this.language,
     });
     this.state.fans = this.fanViews(this.state.fans).map((v) =>
-      v.id === fanId && v.offer?.id === offerId ? { ...v, offer: { ...v.offer, message: res.value, source: res.source } } : v,
+      v.id === fanId && v.offer?.id === offerId
+        ? { ...v, offer: { ...v.offer, message: res.value, source: res.source } }
+        : v,
     );
     this.state.thinking = null;
     this.emit();

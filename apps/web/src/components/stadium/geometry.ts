@@ -4,7 +4,10 @@ import { STADIUM_ASPECT, TIER_SPECS, type Tier } from '@fcb/core';
 export const MAP = { w: 420, h: 540, cx: 210, cy: 270, ry: 258 } as const;
 export const RX = MAP.ry * STADIUM_ASPECT.rx;
 
-const RING = Object.fromEntries(TIER_SPECS.map((t) => [t.tier, t.ring])) as Record<Tier, readonly [number, number]>;
+const RING = Object.fromEntries(TIER_SPECS.map((t) => [t.tier, t.ring])) as Record<
+  Tier,
+  readonly [number, number]
+>;
 
 function point(deg: number, f: number): [number, number] {
   const t = (deg * Math.PI) / 180;
@@ -20,8 +23,16 @@ export function blockPath(startAngle: number, endAngle: number, tier: Tier, gapD
   const inner: string[] = [];
   for (let i = 0; i <= steps; i++) {
     const a = a0 + ((a1 - a0) * i) / steps;
-    outer.push(point(a, f1).map((v) => v.toFixed(1)).join(','));
-    inner.unshift(point(a, f0).map((v) => v.toFixed(1)).join(','));
+    outer.push(
+      point(a, f1)
+        .map((v) => v.toFixed(1))
+        .join(','),
+    );
+    inner.unshift(
+      point(a, f0)
+        .map((v) => v.toFixed(1))
+        .join(','),
+    );
   }
   return `M${outer.join(' L')} L${inner.join(' L')} Z`;
 }
