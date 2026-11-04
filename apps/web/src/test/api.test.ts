@@ -8,8 +8,8 @@ import { POST as drawRoute } from '@/app/api/ballot/draw/route';
 import { GET as health } from '@/app/api/health/route';
 import { GET as liveGet, POST as livePost } from '@/app/api/live/[room]/route';
 import { aiStatus } from '@/lib/server/ai';
-import { commitDraw, performDraw, seedFor } from '@/lib/server/draws';
-import { HttpError, MAX_BODY_BYTES, handler, readJson } from '@/lib/server/http';
+import { commitDraw, isValidDrawId, performDraw, seedFor } from '@/lib/server/draws';
+import { HttpError, MAX_BODY_BYTES, clientKey, handler, readJson } from '@/lib/server/http';
 import { LiveRoom } from '@/lib/server/liveRooms';
 import { rateLimit, resetRateLimits } from '@/lib/server/rateLimit';
 
@@ -43,6 +43,16 @@ describe('http helpers', () => {
     await expect(
       readJson(post('/x', { a: 'x'.repeat(MAX_BODY_BYTES) }), Schema),
     ).rejects.toMatchObject({ status: 413 });
+  });
+
+  it('keys rate limits on the proxy-added hop, not a client-supplied one', () => {
+    const spoofed = (first: string) =>
+      clientKey(post('/x', {}, { 'x-forwarded-for': `${first}, 203.0.113.7` }));
+    expect(spoofed('1.1.1.1')).toBe('203.0.113.7');
+    expect(spoofed('9.9.9.9')).toBe('203.0.113.7');
+    expect(
+      clientKey(post('/x', {}, { 'x-real-ip': '198.51.100.2', 'x-forwarded-for': '1.1.1.1' })),
+    ).toBe('198.51.100.2');
   });
 
   it('maps errors and rate limits to clean JSON responses', async () => {
@@ -89,6 +99,10 @@ describe('verifiable ballot API', () => {
     expect(() => commitDraw('nope')).toThrow(/Unknown fixture/);
     const c = commitDraw('fcb-wob-2026-12-05');
     expect(() => performDraw(c.drawId, c.fixtureId, 'ghost')).toThrow(/Unknown member/);
+    // Draw ids are minted (and signed) by /commit — invented or re-targeted ids are refused.
+    expect(() => performDraw(crypto.randomUUID(), c.fixtureId, 'lena')).toThrow(/commitment first/);
+    expect(() => performDraw(c.drawId, 'fcb-fch-2026-12-15', 'lena')).toThrow(/commitment first/);
+    expect(isValidDrawId(c.drawId, c.fixtureId)).toBe(true);
     expect(
       (
         await drawRoute(

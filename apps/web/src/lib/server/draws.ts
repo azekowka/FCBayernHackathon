@@ -1,5 +1,5 @@
 import 'server-only';
-import { createHmac, randomUUID } from 'node:crypto';
+import { createHmac, randomBytes, randomUUID, timingSafeEqual } from 'node:crypto';
 import {
   FIXTURES,
   applicationWeight,
@@ -22,10 +22,30 @@ import { HttpError } from './http';
 
 /**
  * Stateless commit–reveal: seed = HMAC(DRAW_SECRET, drawId|fixtureId). The
- * server can always re-derive the seed for a draw id (works across instances),
- * but nobody can predict it from the published commitment.
+ * server can always re-derive the seed for a draw id (works across instances
+ * that share DRAW_SECRET), but nobody can predict it from the commitment.
+ * Without DRAW_SECRET we use a random per-process secret — never a constant
+ * from the repository, which would let anyone precompute the winners.
  */
-const SECRET = process.env.DRAW_SECRET || 'fan-ai-lab-local-draw-secret';
+const SECRET = process.env.DRAW_SECRET || randomBytes(32).toString('hex');
+
+/** Draw ids are minted by /commit and signed, so clients can't invent (re-roll) draws. */
+const DRAW_ID = /^([0-9a-f-]{36})\.([0-9a-f]{16})$/;
+
+function tag(uuid: string, fixtureId: string): string {
+  return createHmac('sha256', SECRET)
+    .update(`draw-id|${uuid}|${fixtureId}`)
+    .digest('hex')
+    .slice(0, 16);
+}
+
+export function isValidDrawId(drawId: string, fixtureId: string): boolean {
+  const m = DRAW_ID.exec(drawId);
+  if (!m) return false;
+  const expected = Buffer.from(tag(m[1] as string, fixtureId));
+  const given = Buffer.from(m[2] as string);
+  return expected.length === given.length && timingSafeEqual(expected, given);
+}
 
 export function seedFor(drawId: string, fixtureId: string): string {
   const entropy = createHmac('sha256', SECRET)
@@ -57,7 +77,8 @@ function member(memberId: string) {
 
 export function commitDraw(fixtureId: string): CommitResponse {
   const fixture = openFixture(fixtureId);
-  const drawId = randomUUID();
+  const uuid = randomUUID();
+  const drawId = `${uuid}.${tag(uuid, fixtureId)}`;
   return {
     drawId,
     fixtureId,
@@ -79,6 +100,9 @@ export function performDraw(drawId: string, fixtureId: string, memberId: string)
   const key = `${drawId}|${fixtureId}|${memberId}`;
   const hit = cache.get(key);
   if (hit) return hit;
+  if (!isValidDrawId(drawId, fixtureId)) {
+    throw new HttpError('bad_request', 'Unknown draw — publish a commitment first', 400);
+  }
 
   const fixture = openFixture(fixtureId);
   const m = member(memberId);

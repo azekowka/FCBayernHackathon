@@ -1,14 +1,27 @@
-import { apiError } from '@/lib/server/http';
+import { apiError, clientKey } from '@/lib/server/http';
 import { ROOM_ID, getRoom, type LiveState } from '@/lib/server/liveRooms';
+import { rateLimit } from '@/lib/server/rateLimit';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 /** Server-Sent Events: every phone in the room gets each new state instantly. */
 export async function GET(req: Request, ctx: { params: Promise<{ room: string }> }) {
+  // Opening a stream can create a room (and an AI call), so it shares a budget.
+  const limit = rateLimit(`live-stream:${clientKey(req)}`, 20, 30);
+  if (!limit.ok) {
+    return apiError('rate_limited', 'Too many connections — try again in a moment.', 429, {
+      'Retry-After': String(Math.ceil(limit.retryAfterMs / 1000)),
+    });
+  }
   const { room: id } = await ctx.params;
   if (!ROOM_ID.test(id)) return apiError('bad_request', 'Invalid room id', 400);
-  const room = await getRoom(id);
+  let room;
+  try {
+    room = await getRoom(id);
+  } catch (error) {
+    return apiError('rate_limited', error instanceof Error ? error.message : 'Busy', 503);
+  }
   const encoder = new TextEncoder();
   let cleanup = () => {};
 

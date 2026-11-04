@@ -108,9 +108,13 @@ export async function openingNudge(
 const ATTENDING =
   /\b(i'?m coming|i am coming|i('| wi)ll (be there|come|go)|ich komme|bin dabei|ich bin da|see you (there|saturday)|wir sehen uns)\b/i;
 const GIFT = /\b(gift|youth|jugend|junior|kids?|kinder|verschenk\w*|donat\w*|spende\w*|schenk\w*)/i;
-const RELEASE =
-  /\b(release|freigeb\w*|frei ?geben|can'?t (make|come|go|attend)|cannot (make|come|attend)|won'?t (make|be able)|kann nicht|schaff\w* (es )?nicht|not coming|nicht (kommen|da)|give (it|my seat) (up|away)|pass (it )?on|weitergeb\w*|yes|ja|jo|ok(ay)?|sure|passt|do it|mach (es|das)|go ahead|bitte)\b/i;
+/** Unambiguous "I can't come / release it" phrases. */
+const RELEASE_STRONG =
+  /\b(release|freigeb\w*|frei ?geben|can'?t (make|come|go|attend)|cannot (make|come|attend)|won'?t (make|be able)|kann nicht|schaff\w* (es )?nicht|not coming|nicht (kommen|da)|give (it|my seat) (up|away)|pass (it )?on|weitergeb\w*)\b/i;
+/** Refusals and "keep it" — checked before generic agreement words. */
 const KEEP = /\b(keep|behalt\w*|no thanks|nein danke|nope|nein|no)\b/i;
+/** Generic agreement ("yes", "ok", "bitte") — only means release if nothing else matched. */
+const RELEASE_WEAK = /\b(yes|ja|jo|ok(ay)?|sure|passt|do it|mach (es|das)|go ahead|bitte)\b/i;
 const WHY = /\b(why|warum|wieso|weshalb|how do you know|woher|privacy|datenschutz|data|daten)\b/i;
 
 export function classifySeatMessage(message: string): SeatIntent {
@@ -119,8 +123,9 @@ export function classifySeatMessage(message: string): SeatIntent {
   if (WHY.test(m)) return 'why';
   if (ATTENDING.test(m)) return 'keep';
   if (GIFT.test(m)) return 'gift';
-  if (RELEASE.test(m)) return 'release';
+  if (RELEASE_STRONG.test(m)) return 'release';
   if (KEEP.test(m)) return 'keep';
+  if (RELEASE_WEAK.test(m)) return 'release';
   return m.includes('?') ? 'question' : 'unknown';
 }
 

@@ -31,9 +31,15 @@ export function apiError(
   );
 }
 
+/**
+ * Rate-limit key. Clients can prepend anything to X-Forwarded-For, so we use
+ * the platform-set X-Real-IP, else the right-most XFF hop (added by our proxy).
+ */
 export function clientKey(req: Request): string {
-  const fwd = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim();
-  return fwd || req.headers.get('x-real-ip') || 'local';
+  const real = req.headers.get('x-real-ip')?.trim();
+  if (real) return real;
+  const hops = req.headers.get('x-forwarded-for')?.split(',') ?? [];
+  return hops.at(-1)?.trim() || 'local';
 }
 
 export class HttpError extends Error {
@@ -103,3 +109,5 @@ export function handler<A extends unknown[]>(
 
 export const AI_BUCKET = { name: 'ai', capacity: 20, refillPerMinute: 30 } as const;
 export const API_BUCKET = { name: 'api', capacity: 60, refillPerMinute: 120 } as const;
+/** Full-size draws are CPU-heavy (~190k entries): a tighter budget. */
+export const DRAW_BUCKET = { name: 'draw', capacity: 10, refillPerMinute: 20 } as const;

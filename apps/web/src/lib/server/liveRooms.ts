@@ -110,10 +110,20 @@ export class LiveRoom {
 
   subscribe(fn: (s: LiveState) => void): () => void {
     this.listeners.add(fn);
-    return () => this.listeners.delete(fn);
+    this.lastActive = Date.now();
+    return () => {
+      this.listeners.delete(fn);
+      this.lastActive = Date.now();
+    };
+  }
+
+  /** Rooms with connected phones are never evicted. */
+  get watched(): boolean {
+    return this.listeners.size > 0;
   }
 
   snapshot(): LiveState {
+    this.lastActive = Date.now();
     return this.state;
   }
 
@@ -286,6 +296,11 @@ export class LiveRoom {
           mode: a.mode,
           listing: liveListingFor(),
         });
+        if (log.some((l) => l.kind === 'rejected')) {
+          this.event('info', 'Release not possible any more — the match has started.');
+          this.emit();
+          break;
+        }
         this.state.holder.status = a.mode === 'youth' ? 'gifted' : 'released';
         this.event(
           a.mode === 'youth' ? 'gifted' : 'released',
@@ -331,6 +346,12 @@ export class LiveRoom {
           offerId: pending.id,
         });
         const fan = LIVE_WAITLIST.find((f) => f.id === a.fanId);
+        if (!log.some((l) => l.kind === (a.accept ? 'accepted' : 'declined'))) {
+          // The engine expired or rejected the offer — never announce what didn't happen.
+          this.event('info', `${fan?.name ?? 'The fan'}’s offer is no longer open.`);
+          this.emit();
+          break;
+        }
         if (a.accept) {
           this.event(
             'accepted',
@@ -413,10 +434,15 @@ export async function getRoom(id: string): Promise<LiveRoom> {
   const existing = rooms.get(id);
   if (existing) return existing;
   const now = Date.now();
-  for (const [key, room] of rooms) if (now - room.lastActive > IDLE_MS) rooms.delete(key);
+  for (const [key, room] of rooms) {
+    if (!room.watched && now - room.lastActive > IDLE_MS) rooms.delete(key);
+  }
   if (rooms.size >= MAX_ROOMS) {
-    const oldest = [...rooms.entries()].sort((a, b) => a[1].lastActive - b[1].lastActive)[0];
-    if (oldest) rooms.delete(oldest[0]);
+    const oldest = [...rooms.entries()]
+      .filter(([, r]) => !r.watched)
+      .sort((a, b) => a[1].lastActive - b[1].lastActive)[0];
+    if (!oldest) throw new Error('All live rooms are in use — try again later');
+    rooms.delete(oldest[0]);
   }
   const room = new LiveRoom(id);
   rooms.set(id, room);

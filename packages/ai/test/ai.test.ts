@@ -46,6 +46,7 @@ import {
   sanitizeUserText,
   seatReplyTemplate,
   structured,
+  toAsciiDigits,
   ungroundedNumbers,
   wrapUserText,
   writeBallotLetter,
@@ -229,6 +230,13 @@ describe('numbers guard', () => {
     expect(allowedNumbers(facts).has('189190')).toBe(true);
   });
 
+  it('checks numbers written in any script, not just ASCII digits', () => {
+    expect(toAsciiDigits('٤٥٠ · ３５％ · ४२')).toBe('450 · 35% · 42');
+    expect(ungroundedNumbers('السعر ٤٥٠ €', facts)).toEqual(['450']);
+    expect(ungroundedNumbers('確率は３５％です', facts)).toEqual(['35']);
+    expect(ungroundedNumbers('٢٠٢٦', facts)).toEqual([]);
+  });
+
   it('flags invented numbers', () => {
     expect(ungroundedNumbers('You were 1 of 250,000 applicants with a 42% chance.', facts)).toEqual(
       ['250,000', '42'],
@@ -344,6 +352,9 @@ describe('seat release assistant', () => {
     ["Don't worry, I'm coming!", 'keep'],
     ['Nein danke, ich komme', 'keep'],
     ['no', 'keep'],
+    ['Nein, bitte behalten', 'keep'],
+    ["No thanks, I'll keep it ok", 'keep'],
+    ['No, I cannot make it', 'release'],
     ['Why are you asking me?', 'why'],
     ['Woher weißt du das?', 'why'],
     ['What time is kick-off?', 'question'],

@@ -7,7 +7,7 @@ import { AI_BUCKET, handler, json, readJson } from '@/lib/server/http';
 export const dynamic = 'force-dynamic';
 
 const Body = z.object({
-  drawId: z.uuid(),
+  drawId: z.string().min(1).max(64),
   fixtureId: z.string().min(1).max(64),
   memberId: z.string().min(1).max(32),
   language: z.enum(SUPPORTED_LANGUAGES as [string, ...string[]]).optional(),

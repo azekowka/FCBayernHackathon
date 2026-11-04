@@ -55,11 +55,24 @@ export function allowedNumbers(facts: unknown): Set<string> {
   return allowed;
 }
 
+/**
+ * Maps every Unicode decimal digit (Arabic-Indic, Devanagari, full-width…) to
+ * ASCII so numbers written in any script are checked, not silently skipped.
+ * Unicode lays decimal digits out in contiguous runs of ten starting at zero.
+ */
+export function toAsciiDigits(text: string): string {
+  return text.normalize('NFKC').replace(/\p{Nd}/gu, (ch) => {
+    let start = ch.codePointAt(0) as number;
+    while (/\p{Nd}/u.test(String.fromCodePoint(start - 1))) start--;
+    return String(((ch.codePointAt(0) as number) - start) % 10);
+  });
+}
+
 /** Returns the numbers in `text` that the facts cannot account for. */
 export function ungroundedNumbers(text: string, facts: unknown): string[] {
   const allowed = allowedNumbers(facts);
   const offending: string[] = [];
-  for (const token of stripHexLike(text).match(/\d+(?:[.,]\d+)*/g) ?? []) {
+  for (const token of stripHexLike(toAsciiDigits(text)).match(/\d+(?:[.,]\d+)*/g) ?? []) {
     const d = digits(token);
     if (d.length <= 1 || allowed.has(d)) continue;
     const parts = token.split(/[.,]/);
