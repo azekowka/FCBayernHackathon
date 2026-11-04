@@ -36,7 +36,7 @@ import {
   Utensils,
   Wand2,
 } from 'lucide-react';
-import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { LineChart } from '@/components/charts/LineChart';
 import { AiBadge, TypingDots } from '@/components/ui/AiBadge';
 import { RangeField, Segmented, SelectField, TextField, Toggle } from '@/components/ui/controls';
@@ -208,11 +208,16 @@ export function JourneyApp() {
 
   // ── Q&A ──
   const [question, setQuestion] = useState('');
-  const [qa, setQa] = useState<{ q: string; a?: AiPayload<string>; error?: string }[]>([]);
+  const [qa, setQa] = useState<{ id: number; q: string; a?: AiPayload<string>; error?: string }[]>(
+    [],
+  );
+  const qaSeq = useRef(0);
   const ask = async (q: string) => {
     if (!q.trim()) return;
+    // Stable ids: answers attach to their own question even if several are in flight.
+    const id = ++qaSeq.current;
     setQuestion('');
-    setQa((cur) => [...cur, { q }]);
+    setQa((cur) => [...cur, { id, q }]);
     try {
       const a = await postJson<AiPayload<string>>('/api/ai/journey', {
         action: 'ask',
@@ -220,11 +225,9 @@ export function JourneyApp() {
         question: q,
         language,
       });
-      setQa((cur) => cur.map((x, i) => (i === cur.length - 1 ? { ...x, a } : x)));
+      setQa((cur) => cur.map((x) => (x.id === id ? { ...x, a } : x)));
     } catch (e) {
-      setQa((cur) =>
-        cur.map((x, i) => (i === cur.length - 1 ? { ...x, error: errorMessage(e) } : x)),
-      );
+      setQa((cur) => cur.map((x) => (x.id === id ? { ...x, error: errorMessage(e) } : x)));
     }
   };
 
@@ -694,8 +697,8 @@ export function JourneyApp() {
           subtitle="Answers come only from your plan — no invented times."
         >
           <ul className="space-y-3" aria-live="polite">
-            {qa.map((x, i) => (
-              <li key={i} className="space-y-1.5">
+            {qa.map((x) => (
+              <li key={x.id} className="space-y-1.5">
                 <p className="ml-auto w-fit max-w-[85%] rounded-2xl rounded-br-md bg-fcb px-3 py-2 text-sm text-white">
                   {x.q}
                 </p>
