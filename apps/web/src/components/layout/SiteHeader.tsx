@@ -3,7 +3,7 @@
 import { Menu, X } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { cn } from '@/lib/cn';
 import { LogoMark } from './Logo';
 
@@ -18,7 +18,6 @@ export const NAV = [
 export function SiteHeader({ ai }: { ai: { mode: 'gemini' | 'demo'; model: string } }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  useEffect(() => setOpen(false), [pathname]);
 
   return (
     <header className="sticky top-0 z-40 border-b hairline bg-ink-950/80 backdrop-blur-xl">
@@ -92,6 +91,7 @@ export function SiteHeader({ ai }: { ai: { mode: 'gemini' | 'demo'; model: strin
                 <Link
                   href={item.href}
                   aria-current={pathname === item.href ? 'page' : undefined}
+                  onClick={() => setOpen(false)}
                   className="block rounded-lg px-3 py-2.5 text-base font-medium text-fg-2 hover:bg-ink-750 hover:text-fg"
                 >
                   {item.label}
