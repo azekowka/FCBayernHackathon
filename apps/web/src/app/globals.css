@@ -1,0 +1,161 @@
+@import 'tailwindcss';
+
+/*
+ * "Stadium night" design tokens.
+ * Chart colours (viz-*) were validated with the dataviz palette checker for the
+ * dark surface #111827: lightness band, chroma floor, CVD separation (ΔE ≥ 9.5),
+ * normal-vision floor and ≥ 3:1 contrast — in this fixed order.
+ */
+@theme {
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Barlow Condensed', 'Inter Variable', ui-sans-serif, sans-serif;
+  --font-mono: 'JetBrains Mono Variable', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --color-ink-950: #060912;
+  --color-ink-900: #0a0f1c;
+  --color-ink-850: #111827;
+  --color-ink-800: #151d2d;
+  --color-ink-750: #1a2335;
+  --color-ink-700: #212b3f;
+  --color-ink-600: #2c374d;
+  --color-line: #232d42;
+  --color-line-strong: #34405a;
+
+  --color-fg: #f4f6fb;
+  --color-fg-2: #b9c1d1;
+  --color-fg-3: #8590a6;
+
+  --color-fcb: #dc052d;
+  --color-fcb-600: #b8042a;
+  --color-fcb-glow: #ff2e54;
+
+  --color-viz-teal: #12a08e;
+  --color-viz-red: #e23a4e;
+  --color-viz-violet: #8a7cf0;
+  --color-viz-amber: #ba7f0f;
+
+  /* Text-safe status tints (≥ 4.5:1 on ink-900). */
+  --color-ok: #4fd1bd;
+  --color-warn: #f2b544;
+  --color-bad: #ff6b81;
+  --color-info: #9db4ff;
+  --color-u6: #3d8fe0;
+
+  --radius-card: 1.25rem;
+  --shadow-card: 0 1px 0 0 rgb(255 255 255 / 0.04) inset, 0 20px 40px -24px rgb(0 0 0 / 0.6);
+
+  --animate-rise: rise 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-pulse-ring: pulse-ring 2s ease-out infinite;
+  --animate-shimmer: shimmer 1.6s linear infinite;
+  --animate-blink: blink 1.2s ease-in-out infinite;
+
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes pulse-ring {
+    0% {
+      box-shadow: 0 0 0 0 rgb(220 5 45 / 0.55);
+    }
+    100% {
+      box-shadow: 0 0 0 14px rgb(220 5 45 / 0);
+    }
+  }
+  @keyframes shimmer {
+    from {
+      background-position: -200% 0;
+    }
+    to {
+      background-position: 200% 0;
+    }
+  }
+  @keyframes blink {
+    0%,
+    100% {
+      opacity: 0.25;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+}
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+  body {
+    background-color: var(--color-ink-950);
+    background-image:
+      radial-gradient(120% 60% at 50% -10%, rgb(220 5 45 / 0.14), transparent 60%),
+      radial-gradient(80% 40% at 100% 0%, rgb(61 143 224 / 0.06), transparent 60%);
+    background-attachment: fixed;
+    color: var(--color-fg);
+    font-family: var(--font-sans);
+    font-feature-settings: 'cv11', 'ss01';
+    -webkit-font-smoothing: antialiased;
+    min-height: 100dvh;
+  }
+  ::selection {
+    background: rgb(220 5 45 / 0.45);
+    color: white;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-fcb-glow);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@utility tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+@utility display {
+  font-family: var(--font-display);
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+}
+
+@utility card {
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 0.025), transparent 40%), var(--color-ink-850);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+}
+
+@utility hairline {
+  border-color: var(--color-line);
+}
+
+@utility skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--color-ink-750) 0%,
+    var(--color-ink-700) 50%,
+    var(--color-ink-750) 100%
+  );
+  background-size: 200% 100%;
+  animation: var(--animate-shimmer);
+}
