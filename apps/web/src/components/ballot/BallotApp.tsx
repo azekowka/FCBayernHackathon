@@ -71,11 +71,11 @@ export function BallotApp() {
     <div className="grid gap-6 lg:grid-cols-[340px_1fr]">
       <aside className="flex flex-col gap-6" aria-label="Member">
         <Panel title="Who’s applying?" subtitle="Fictional members — switch to compare">
-          <ul className="-mx-2 grid gap-1" role="radiogroup" aria-label="Demo member">
+          <div className="-mx-2 grid gap-1" role="radiogroup" aria-label="Demo member">
             {DEMO_MEMBERS.map((m) => {
               const active = m.id === memberId;
               return (
-                <li key={m.id}>
+                <div key={m.id}>
                   <button
                     type="button"
                     role="radio"
@@ -96,16 +96,16 @@ export function BallotApp() {
                           </span>
                         )}
                       </span>
-                      <span className="block truncate text-xs text-fg-3">
+                      <span className={cn('block truncate text-xs', active ? 'text-fg-2' : 'text-fg-3')}>
                         {m.city} · member since {m.memberSince}
                       </span>
                     </span>
                     {active && <Check className="size-4 text-ok" aria-hidden />}
                   </button>
-                </li>
+                </div>
               );
             })}
-          </ul>
+          </div>
           <p className="mt-3 text-xs leading-relaxed text-fg-3">{member.persona}</p>
         </Panel>
         <LoyaltyCard member={member} />

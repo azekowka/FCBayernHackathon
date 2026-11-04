@@ -42,7 +42,7 @@ export function Timeline({ steps }: { steps: readonly TimelineStep[] }) {
             </span>
             <div className="pb-5">
               <p className={cn('flex flex-wrap items-center gap-2 text-sm', big ? 'font-semibold text-fg' : 'font-medium text-fg-2')}>
-                {s.line && <span className="rounded bg-u6 px-1.5 py-px text-[11px] font-bold text-white">{s.line}</span>}
+                {s.line && <span className="rounded bg-[#1b5fa8] px-1.5 py-px text-[11px] font-bold text-white">{s.line}</span>}
                 {s.title}
                 {s.crowd && <Badge tone={CROWD[s.crowd].tone}>{CROWD[s.crowd].label}</Badge>}
               </p>

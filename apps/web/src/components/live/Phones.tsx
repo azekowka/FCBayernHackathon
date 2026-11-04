@@ -200,7 +200,7 @@ export function FanPhone({
             </div>
           </div>
         ) : fan.ticket ? (
-          <div className="animate-rise overflow-hidden rounded-2xl bg-gradient-to-br from-viz-teal to-[#0b6f63] text-white">
+          <div className="animate-rise overflow-hidden rounded-2xl bg-gradient-to-br from-[#0b7366] to-[#075a50] text-white">
             <div className="p-4">
               <p className="flex items-center gap-1.5 text-[11px] font-semibold tracking-widest uppercase opacity-90">
                 <Ticket className="size-3.5" aria-hidden /> Admit one · in your wallet

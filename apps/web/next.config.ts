@@ -11,7 +11,8 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
-  output: 'standalone',
+  // Standalone bundle only for the container image (next start needs the default output).
+  output: process.env.NEXT_OUTPUT_STANDALONE === '1' ? 'standalone' : undefined,
   transpilePackages: ['@fcb/core', '@fcb/ai'],
   serverExternalPackages: ['@google/genai'],
   async headers() {

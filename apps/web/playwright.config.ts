@@ -14,6 +14,8 @@ export default defineConfig({
   use: {
     baseURL,
     trace: 'retain-on-failure',
+    // Bypass any HTTP(S)_PROXY for the local server (CI sandboxes often set one).
+    launchOptions: { args: ['--no-proxy-server'] },
     screenshot: 'only-on-failure',
   },
   projects: [

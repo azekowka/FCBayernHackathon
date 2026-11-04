@@ -83,7 +83,8 @@ export function JourneyApp() {
   const blockId = BLOCK_IDS.has(blockInput) ? blockInput : '112';
   const blockValid = BLOCK_IDS.has(blockInput);
   const origin = getOrigin(originId);
-  const modes = availableModes(origin);
+  // Memoised: a fresh array each render would change `request` and re-fire the narration effect forever.
+  const modes = useMemo(() => availableModes(origin), [origin]);
 
   const request: JourneyRequest = useMemo(
     () => ({

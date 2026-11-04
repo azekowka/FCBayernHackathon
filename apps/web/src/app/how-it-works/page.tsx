@@ -49,7 +49,7 @@ export default function HowItWorksPage() {
       />
 
       <Panel title="System at a glance" subtitle={`Currently running: ${ai.mode === 'gemini' ? `Gemini (${ai.model})` : 'offline demo templates — set GEMINI_API_KEY for live Gemini'}`}>
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto" tabIndex={0} role="region" aria-label="Architecture diagram (scrollable)">
           <svg viewBox="0 0 980 360" className="h-auto w-full min-w-[760px]" role="img" aria-labelledby="arch-title arch-desc">
             <title id="arch-title">Architecture diagram</title>
             <desc id="arch-desc">

@@ -10,7 +10,8 @@ const VARIANTS: Record<Variant, string> = {
     'bg-fcb text-white hover:bg-fcb-600 shadow-[0_8px_24px_-12px_rgb(220_5_45/0.8)] disabled:bg-ink-600 disabled:text-fg-3 disabled:shadow-none',
   secondary: 'bg-ink-700 text-fg hover:bg-ink-600 border border-line-strong disabled:text-fg-3',
   ghost: 'text-fg-2 hover:text-fg hover:bg-ink-750',
-  teal: 'bg-viz-teal text-white hover:brightness-110 disabled:bg-ink-600 disabled:text-fg-3',
+  // Darker than the chart teal so white text clears WCAG AA (≈ 5:1).
+  teal: 'bg-[#0b7366] text-white hover:bg-[#0a665b] disabled:bg-ink-600 disabled:text-fg-3',
 };
 
 const SIZES: Record<Size, string> = {
