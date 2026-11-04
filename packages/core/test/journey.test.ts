@@ -177,6 +177,10 @@ describe('journey planner', () => {
     expect(plan.chosen.departAt).toBeLessThanOrEqual(normal.chosen.departAt);
     const garching = planJourney({ ...base, originId: 'garching', disruption: 'u6-north-closure' });
     expect(garching.chosen.legs.some((l) => l.to === 'Garching-Hochbrück')).toBe(true);
+    for (const p of [plan, garching]) {
+      expect(p.chosen.legs.some((l) => l.from === 'Fröttmaning')).toBe(false);
+      expect(p.chosen.legs.filter((l) => l.to === 'Esplanade')).toHaveLength(1);
+    }
   });
 
   it('suggests the U6 when a cyclist faces heavy rain', () => {

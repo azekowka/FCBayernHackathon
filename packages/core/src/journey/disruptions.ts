@@ -1,4 +1,4 @@
-import { ESPLANADE_MINUTES, STATION, type Leg, type Mode } from './network';
+import { STATION, type Leg, type Mode } from './network';
 
 /**
  * Matchday disruptions the agent can re-plan around. Each one is a pure
@@ -56,28 +56,49 @@ export const DISRUPTIONS: Record<DisruptionId, Disruption> = {
     outbound: { demand: 1, capacity: 0.75 },
     modePenalty: {},
     carSlowdown: 1.15,
-    transformLegs: (legs) =>
-      legs.flatMap((leg): Leg[] => {
-        if (leg.crowdSensitive && leg.to === STATION) {
-          return [
-            {
-              ...leg,
-              to: 'Kieferngarten',
-              minutes: Math.max(2, leg.minutes - 2),
-              note: 'Terminates at Kieferngarten',
-            },
-          ];
-        }
-        if (leg.from === STATION && leg.minutes === ESPLANADE_MINUTES) return [KIEFERNGARTEN_WALK];
+    transformLegs: (legs) => {
+      const out: Leg[] = [];
+      let rerouted = false;
+      for (const leg of legs) {
         if (leg.line === 'U6' && leg.to === STATION) {
-          // Southbound from Garching: stop before the closed section, then walk.
-          return [
-            { ...leg, to: 'Garching-Hochbrück', minutes: Math.max(2, leg.minutes - 3) },
-            { ...KIEFERNGARTEN_WALK, from: 'Garching-Hochbrück', minutes: 32, distanceKm: 2.6 },
-          ];
+          rerouted = true;
+          if (leg.crowdSensitive) {
+            // Northbound: terminate at Kieferngarten, then the fan walk.
+            out.push(
+              {
+                ...leg,
+                to: 'Kieferngarten',
+                minutes: Math.max(2, leg.minutes - 2),
+                note: 'Terminates at Kieferngarten',
+              },
+              KIEFERNGARTEN_WALK,
+            );
+          } else {
+            // Southbound from Garching: stop before the closed section, then walk.
+            out.push(
+              {
+                ...leg,
+                to: 'Garching-Hochbrück',
+                minutes: Math.max(2, leg.minutes - 3),
+                note: 'Last stop before the closure',
+              },
+              {
+                ...KIEFERNGARTEN_WALK,
+                from: 'Garching-Hochbrück',
+                minutes: 32,
+                distanceKm: 2.6,
+                note: 'Fan walk from the north',
+              },
+            );
+          }
+          continue;
         }
-        return [leg];
-      }),
+        // The usual Esplanade walk from Fröttmaning is replaced by the fan walk above.
+        if (rerouted && leg.from === STATION) continue;
+        out.push(leg);
+      }
+      return out;
+    },
   },
   'heavy-rain': {
     id: 'heavy-rain',
