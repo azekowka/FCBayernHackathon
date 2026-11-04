@@ -267,7 +267,8 @@ export function LineChart({
         </div>
       )}
       {footer}
-      <table className="sr-only">
+      <div className="sr-only">
+        <table>
         <caption>{title}</caption>
         <thead>
           <tr>
@@ -290,6 +291,7 @@ export function LineChart({
           ))}
         </tbody>
       </table>
+      </div>
     </figure>
   );
 }

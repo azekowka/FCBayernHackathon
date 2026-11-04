@@ -125,7 +125,8 @@ export function ColumnChart({
           <p className="text-fg-3">{active.detail ?? active.label}</p>
         </div>
       )}
-      <table className="sr-only">
+      <div className="sr-only">
+        <table>
         <caption>{title}</caption>
         <tbody>
           {data.map((d) => (
@@ -136,6 +137,7 @@ export function ColumnChart({
           ))}
         </tbody>
       </table>
+      </div>
     </figure>
   );
 }
