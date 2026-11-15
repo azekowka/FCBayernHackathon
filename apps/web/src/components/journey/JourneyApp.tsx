@@ -295,7 +295,7 @@ export function JourneyApp() {
               <AiBadge source={parsed.source} />
               {parsed.fields.length ? (
                 parsed.fields.map((f) => (
-                  <Badge key={f} tone="teal">
+                  <Badge key={f} tone="green">
                     {f}
                   </Badge>
                 ))
@@ -521,7 +521,7 @@ export function JourneyApp() {
             label="Home by"
             value={rec.homeClock}
             sub={rec.stayMinutes ? `after a ${rec.stayMinutes}-min stay` : 'leaving at the whistle'}
-            tone="violet"
+            tone="blue"
           />
           <Stat
             label="Green points"
@@ -529,7 +529,7 @@ export function JourneyApp() {
             sub={
               plan.green.co2SavedKg > 0 ? `${plan.green.co2SavedKg} kg CO₂ saved` : 'no CO₂ saving'
             }
-            tone="teal"
+            tone="green"
             className="col-span-2 md:col-span-1"
           />
         </div>
@@ -584,7 +584,7 @@ export function JourneyApp() {
               <ExternalLink className="size-4" aria-hidden /> Open route in Google Maps
             </a>
             {plan.green.breakdown.map((b) => (
-              <Badge key={b} tone="teal">
+              <Badge key={b} tone="green">
                 <Leaf className="size-3" aria-hidden /> {b}
               </Badge>
             ))}
@@ -607,18 +607,16 @@ export function JourneyApp() {
                     key={o.stayMinutes}
                     className={cn(
                       'rounded-xl border p-3',
-                      o.recommended
-                        ? 'border-viz-teal/60 bg-viz-teal/10'
-                        : 'hairline bg-ink-800/50',
+                      o.recommended ? 'border-viz-a/60 bg-viz-a/10' : 'hairline bg-ink-800/50',
                     )}
                   >
                     <div className="flex items-center justify-between gap-3 text-sm">
                       <span className="font-medium text-fg">{o.label}</span>
-                      {o.recommended && <Badge tone="teal">Recommended</Badge>}
+                      {o.recommended && <Badge tone="green">Recommended</Badge>}
                     </div>
                     <div className="mt-2 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
                       <span
-                        className="h-2 rounded-full bg-viz-red"
+                        className="h-2 rounded-full bg-viz-a"
                         style={{ width: `${Math.max(3, (o.queueMinutes / maxQueue) * 100)}%` }}
                         aria-hidden
                       />

@@ -12,12 +12,12 @@ import type { LiveAction } from './useLiveRoom';
 
 const STATUS: Record<
   LiveState['holder']['status'],
-  { label: string; tone: 'teal' | 'amber' | 'violet' | 'neutral' }
+  { label: string; tone: 'green' | 'amber' | 'blue' | 'neutral' }
 > = {
   open: { label: 'Active', tone: 'neutral' },
-  released: { label: 'Released to waitlist', tone: 'teal' },
-  gifted: { label: 'Gifted to youth fan club', tone: 'teal' },
-  kept: { label: 'You’re going', tone: 'violet' },
+  released: { label: 'Released to waitlist', tone: 'green' },
+  gifted: { label: 'Gifted to youth fan club', tone: 'green' },
+  kept: { label: 'You’re going', tone: 'blue' },
 };
 
 function AppBar({ title, subtitle }: { title: string; subtitle: string }) {
@@ -230,7 +230,7 @@ export function FanPhone({
             </p>
             <p className="mt-1 font-semibold text-fg">{fan.offer.seatLabel}</p>
             <div className="mt-2 flex items-center gap-2">
-              <Badge tone="teal">€15 · face value</Badge>
+              <Badge tone="green">€15 · face value</Badge>
               <Badge tone="amber">{fan.offer.expiresInMinutes} min to accept</Badge>
             </div>
             <div className="mt-3 min-h-16 rounded-xl bg-ink-750 p-3 text-[13px] leading-snug text-fg-2">
@@ -246,7 +246,7 @@ export function FanPhone({
                 <X className="size-4" aria-hidden /> Pass
               </Button>
               <Button
-                variant="teal"
+                variant="inverse"
                 onClick={() => send({ action: 'respond', fanId: fan.id, accept: true })}
                 disabled={busy}
               >

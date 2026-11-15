@@ -119,7 +119,7 @@ export function BallotApp() {
           title="Your odds for the next ballot phase"
           subtitle={`Pick up to ${MAX_APPS} matches. Odds come from the published rules and modelled demand.`}
           actions={
-            <Badge tone={selected.length === MAX_APPS ? 'teal' : 'neutral'}>
+            <Badge tone={selected.length === MAX_APPS ? 'green' : 'neutral'}>
               {selected.length} of {MAX_APPS} applications
             </Badge>
           }
@@ -127,12 +127,11 @@ export function BallotApp() {
         >
           <div className="flex flex-wrap items-center gap-4 border-b hairline px-5 py-2.5 text-xs text-fg-3">
             <span className="inline-flex items-center gap-2">
-              <span aria-hidden className="h-2 w-5 rounded-full bg-viz-teal" />{' '}
+              <span aria-hidden className="h-2 w-5 rounded-full bg-viz-a" />{' '}
               {member.firstName === 'Anna' ? 'Familie Huber' : member.firstName}
             </span>
             <span className="inline-flex items-center gap-2">
-              <span aria-hidden className="h-2 w-5 rounded-full bg-viz-violet" /> First-time
-              applicant
+              <span aria-hidden className="h-2 w-5 rounded-full bg-viz-c" /> First-time applicant
             </span>
           </div>
           <ul className="divide-y divide-line">
@@ -146,13 +145,13 @@ export function BallotApp() {
                   <label
                     className={cn(
                       'grid cursor-pointer grid-cols-[auto_1fr] items-center gap-x-4 gap-y-2 px-5 py-3.5 transition-colors sm:grid-cols-[auto_minmax(0,1.3fr)_minmax(0,1fr)]',
-                      checked ? 'bg-viz-teal/[0.06]' : 'hover:bg-ink-800',
+                      checked ? 'bg-viz-a/[0.06]' : 'hover:bg-ink-800',
                       disabled && 'cursor-not-allowed opacity-60',
                     )}
                   >
                     <input
                       type="checkbox"
-                      className="size-4 accent-[var(--color-viz-teal)]"
+                      className="size-4 accent-[var(--color-viz-a)]"
                       checked={checked}
                       disabled={disabled}
                       onChange={() => toggle(f.id)}
@@ -185,11 +184,11 @@ export function BallotApp() {
                       </span>
                       <span className="flex min-w-0 flex-1 flex-col gap-1" aria-hidden>
                         <span
-                          className="h-2 rounded-full bg-viz-teal"
+                          className="h-2 rounded-full bg-viz-a"
                           style={{ width: `${(o.probability / maxP) * 100}%` }}
                         />
                         <span
-                          className="h-2 rounded-full bg-viz-violet"
+                          className="h-2 rounded-full bg-viz-c"
                           style={{ width: `${(o.baselineProbability / maxP) * 100}%` }}
                         />
                       </span>
@@ -233,8 +232,8 @@ export function BallotApp() {
         >
           <div className="grid gap-4 md:grid-cols-[1fr_1fr_auto]">
             {[
-              { title: 'Smart picks', r: rec.smart, tone: 'teal' as const },
-              { title: 'Only the big games', r: rec.naive, tone: 'violet' as const },
+              { title: 'Smart picks', r: rec.smart, tone: 'green' as const },
+              { title: 'Only the big games', r: rec.naive, tone: 'blue' as const },
             ].map((col) => (
               <div key={col.title} className="rounded-2xl border hairline bg-ink-800/60 p-4">
                 <p className="text-xs font-medium text-fg-3">{col.title}</p>
@@ -257,7 +256,7 @@ export function BallotApp() {
                 </ul>
               </div>
             ))}
-            <div className="flex flex-col justify-between gap-3 rounded-2xl border border-viz-teal/40 bg-viz-teal/10 p-4 md:w-48">
+            <div className="flex flex-col justify-between gap-3 rounded-2xl border border-viz-a/40 bg-viz-a/10 p-4 md:w-48">
               <div>
                 <p className="text-xs font-medium text-ok">Uplift</p>
                 <p className="display tabular text-4xl font-bold text-fg">
@@ -266,7 +265,7 @@ export function BallotApp() {
                 </p>
               </div>
               <Button
-                variant="teal"
+                variant="inverse"
                 size="sm"
                 onClick={() => setSelected(rec.smart.picks.map((p) => p.fixtureId))}
               >

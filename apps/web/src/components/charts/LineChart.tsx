@@ -108,7 +108,7 @@ export function LineChart({
               width={W - pad.l - pad.r}
               y={y(band.to)}
               height={Math.max(0, y(band.from) - y(band.to))}
-              fill="var(--color-viz-red)"
+              fill="var(--color-viz-a)"
               opacity={0.08}
             />
             <text

@@ -59,7 +59,7 @@ export function StageDemo({ room }: { room: string }) {
       <div className="card flex flex-wrap items-center justify-between gap-3 px-4 py-3">
         <div className="flex flex-wrap items-center gap-2 text-sm">
           <Badge
-            tone={connection === 'live' ? 'teal' : connection === 'polling' ? 'amber' : 'neutral'}
+            tone={connection === 'live' ? 'green' : connection === 'polling' ? 'amber' : 'neutral'}
           >
             <Radio className="size-3" aria-hidden />{' '}
             {connection === 'live'
@@ -152,7 +152,7 @@ export function StageDemo({ room }: { room: string }) {
                       className={cn(
                         'mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full',
                         e.kind === 'accepted' || e.kind === 'gifted'
-                          ? 'bg-viz-teal/20 text-ok'
+                          ? 'bg-viz-a/20 text-ok'
                           : e.kind === 'skipped'
                             ? 'bg-ink-700 text-fg-3'
                             : e.kind === 'offered' || e.kind === 'released'
@@ -205,7 +205,7 @@ export function StageDemo({ room }: { room: string }) {
                         <Badge
                           tone={
                             f.status === 'seated'
-                              ? 'teal'
+                              ? 'green'
                               : f.status === 'offered'
                                 ? 'red'
                                 : f.status === 'waiting'

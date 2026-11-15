@@ -28,10 +28,10 @@ export function LoyaltyCard({ member }: { member: MemberProfile }) {
       >
         <span className="h-full bg-fg-3" style={{ width: pct(b.base) }} />
         {b.pechvogelBonus > 0 && (
-          <span className="h-full bg-viz-red" style={{ width: pct(b.pechvogelBonus) }} />
+          <span className="h-full bg-viz-a" style={{ width: pct(b.pechvogelBonus) }} />
         )}
         {b.membershipBonus > 0 && (
-          <span className="h-full bg-viz-violet" style={{ width: pct(b.membershipBonus) }} />
+          <span className="h-full bg-viz-b" style={{ width: pct(b.membershipBonus) }} />
         )}
       </div>
       <ul className="mt-3 grid gap-1 text-xs text-fg-3">
@@ -40,11 +40,11 @@ export function LoyaltyCard({ member }: { member: MemberProfile }) {
           <span className="tabular ml-auto text-fg-2">1.00</span>
         </li>
         <li className="flex items-center gap-2">
-          <span aria-hidden className="size-2 rounded-full bg-viz-red" /> Pechvogel bonus
+          <span aria-hidden className="size-2 rounded-full bg-viz-a" /> Pechvogel bonus
           <span className="tabular ml-auto text-fg-2">+{b.pechvogelBonus.toFixed(2)}</span>
         </li>
         <li className="flex items-center gap-2">
-          <span aria-hidden className="size-2 rounded-full bg-viz-violet" /> Membership bonus
+          <span aria-hidden className="size-2 rounded-full bg-viz-b" /> Membership bonus
           <span className="tabular ml-auto text-fg-2">+{b.membershipBonus.toFixed(2)}</span>
         </li>
       </ul>
@@ -65,7 +65,7 @@ export function LoyaltyCard({ member }: { member: MemberProfile }) {
             <span
               key={i}
               className={
-                i < b.pechvogelCounted ? 'h-2 rounded-sm bg-viz-red' : 'h-2 rounded-sm bg-ink-600'
+                i < b.pechvogelCounted ? 'h-2 rounded-sm bg-viz-a' : 'h-2 rounded-sm bg-ink-600'
               }
             />
           ))}

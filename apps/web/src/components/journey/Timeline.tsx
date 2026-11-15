@@ -7,7 +7,7 @@ const DOT: Record<StepKind, string> = {
   walk: 'bg-fg-3',
   ride: 'bg-u6',
   drive: 'bg-viz-amber',
-  cycle: 'bg-viz-teal',
+  cycle: 'bg-viz-a',
   arrive: 'bg-fg',
   gate: 'bg-fcb',
   food: 'bg-fcb',
@@ -15,13 +15,13 @@ const DOT: Record<StepKind, string> = {
   kickoff: 'bg-white',
   halftime: 'bg-fg-2',
   fulltime: 'bg-white',
-  postmatch: 'bg-viz-teal',
+  postmatch: 'bg-viz-a',
   return: 'bg-u6',
   home: 'bg-fg',
 };
 
-const CROWD: Record<CrowdLevel, { tone: 'teal' | 'neutral' | 'amber' | 'red'; label: string }> = {
-  calm: { tone: 'teal', label: 'Calm' },
+const CROWD: Record<CrowdLevel, { tone: 'green' | 'neutral' | 'amber' | 'red'; label: string }> = {
+  calm: { tone: 'green', label: 'Calm' },
   busy: { tone: 'neutral', label: 'Busy' },
   packed: { tone: 'amber', label: 'Packed' },
   crush: { tone: 'red', label: 'Very full' },

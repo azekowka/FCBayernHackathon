@@ -280,7 +280,7 @@ function DrawResult({
           label="Your chance"
           value={fmtOneIn(draw.probability)}
           sub={fmtPct(draw.probability, 1)}
-          tone="teal"
+          tone="green"
         />
         <Stat label="Draw time" value={`${draw.durationMs} ms`} sub="server, full size" />
       </div>

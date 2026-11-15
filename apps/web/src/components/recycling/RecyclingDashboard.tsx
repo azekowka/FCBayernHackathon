@@ -88,19 +88,19 @@ export function RecyclingDashboard({
           label="Back in use — today"
           value={fmtPct(sim.today.recoveredShare)}
           sub={`${fmtInt(sim.today.refilledSeats)} seats via the exchange`}
-          tone="violet"
+          tone="blue"
         />
         <Stat
           label="Back in use — Fair Seat"
           value={fmtPct(recoveredFair)}
           sub={`${fmtInt(sim.fairseat.refilledSeats + sim.fairseat.donatedSeats)} seats incl. youth gifts`}
-          tone="teal"
+          tone="green"
         />
         <Stat
           label="Extra fans in the Arena"
           value={`+${fmtInt(extraFans)}`}
           sub={`this match · ≈${fmtInt(extraFans * 17)} per Bundesliga season`}
-          tone="teal"
+          tone="green"
           className="col-span-2 lg:col-span-1"
         />
       </div>
@@ -197,13 +197,13 @@ export function RecyclingDashboard({
                 {
                   key: 'fair',
                   label: 'Fair Seat (nudge + waitlist)',
-                  color: 'var(--color-viz-teal)',
+                  color: 'var(--color-viz-a)',
                   points: toHours(sim.fairseat),
                 },
                 {
                   key: 'today',
                   label: 'Today (Ticket Exchange)',
-                  color: 'var(--color-viz-violet)',
+                  color: 'var(--color-viz-c)',
                   points: toHours(sim.today),
                 },
               ]}
@@ -211,7 +211,7 @@ export function RecyclingDashboard({
               formatX={(h) => (Math.round(h) === 0 ? 'Kick-off' : `T−${Math.abs(Math.round(h))} h`)}
               formatY={(v) => fmtInt(v)}
               yMax={maxSeats * 1.1}
-              markers={[{ x: -3, label: 'Exchange closes', color: 'var(--color-viz-violet)' }]}
+              markers={[{ x: -3, label: 'Exchange closes', color: 'var(--color-viz-c)' }]}
             />
             <div className="mt-4 grid gap-3 sm:grid-cols-3">
               <p className="rounded-xl bg-ink-800/60 p-3 text-xs text-fg-3">
@@ -259,7 +259,7 @@ export function RecyclingDashboard({
                   >
                     <span className="truncate text-fg-2">{c.label}</span>
                     <span
-                      className="h-2 rounded-full bg-viz-red"
+                      className="h-2 rounded-full bg-viz-a"
                       style={{ width: `${Math.max(6, (c.effect / max) * 100)}%` }}
                       aria-hidden
                     />
@@ -296,8 +296,8 @@ export function RecyclingDashboard({
               spaces go to fans who need them first.
             </li>
             <li className="flex gap-2">
-              <Badge tone="teal">Face value</Badge> No fees, no surge — releasing keeps your loyalty
-              credit.
+              <Badge tone="green">Face value</Badge> No fees, no surge — releasing keeps your
+              loyalty credit.
             </li>
           </ul>
         </Panel>

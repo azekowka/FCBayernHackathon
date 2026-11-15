@@ -19,7 +19,7 @@ export function ColumnChart({
   data,
   format,
   highlightKey,
-  color = 'var(--color-viz-teal)',
+  color = 'var(--color-viz-a)',
   height = 200,
   title,
 }: {
