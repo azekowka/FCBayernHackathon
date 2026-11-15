@@ -1,8 +1,10 @@
 packages:
-  - 'apps/*'
-  - 'packages/*'
+  - apps/*
+  - packages/*
 
 onlyBuiltDependencies:
+  - '@google/genai'
   - esbuild
+  - protobufjs
   - sharp
   - unrs-resolver
