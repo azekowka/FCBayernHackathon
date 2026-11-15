@@ -137,11 +137,6 @@ export function DrawPanel({
       ]);
       setDraw(res);
       setPhase('done');
-      if (res.outcome.won) {
-        toast.success(td.winToast, { description: td.winToastSub(fixture?.opponent ?? '') });
-      } else {
-        toast(td.lossToast, { description: td.lossToastSub });
-      }
     } catch (e) {
       setError(errorMessage(e));
       setPhase('committed');

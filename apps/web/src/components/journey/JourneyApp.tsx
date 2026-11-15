@@ -37,7 +37,6 @@ import {
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
-import { toast } from 'sonner';
 import { LineChart } from '@/components/charts/LineChart';
 import { AiBadge, TypingDots } from '@/components/ui/AiBadge';
 import {
@@ -217,7 +216,6 @@ export function JourneyApp() {
         fields.push(v.postMatch === 'asap' ? tj_.fields.asap : tj_.fields.relaxed);
       }
       setParsed({ fields, source: res.source });
-      if (fields.length) toast.success(tj_.planned, { description: fields.join(' · ') });
     } catch (e) {
       setParseError(errorMessage(e));
     } finally {

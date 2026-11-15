@@ -50,13 +50,11 @@ export async function SiteFooter() {
           <span className="ml-1">{t.footer.made}</span>
         </span>
       </div>
-      {/* Oversized wordmark, cropped by the page edge. Decorative. */}
-      <p
+      {/* Oversized wordmark, cropped by the page edge. Pure decoration (CSS content, not text). */}
+      <div
         aria-hidden
-        className="display pointer-events-none -mb-[0.22em] text-center text-[22vw] leading-[0.8] font-[800] tracking-[-0.06em] text-fg/[0.045] select-none"
-      >
-        Kickoff
-      </p>
+        className="display pointer-events-none -mb-[0.22em] text-center text-[22vw] leading-[0.8] font-[800] tracking-[-0.06em] text-fg/[0.045] select-none before:content-['Kickoff']"
+      />
     </footer>
   );
 }

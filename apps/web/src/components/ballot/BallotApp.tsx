@@ -233,7 +233,7 @@ export function BallotApp() {
                         <span className="display odds-value block text-[22px] leading-none text-fg">
                           <OddsNumber p={o.probability} />
                         </span>
-                        <span className="tabular text-[11px] text-fg-3">
+                        <span data-testid="odds-pct" className="tabular text-[11px] text-fg-3">
                           {f.pct(o.probability, 1)}
                         </span>
                       </span>

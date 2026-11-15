@@ -44,7 +44,10 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
             {t.common.skip}
           </a>
           {/* Page-top atmosphere: faint pitch grid and a red floodlight glow. */}
-          <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[680px]">
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[680px] overflow-hidden"
+          >
             <div className="pitch-grid absolute inset-0 opacity-70" />
             <div className="absolute -top-56 left-1/2 h-[520px] w-[min(1100px,140vw)] -translate-x-1/2 rounded-[100%] bg-fcb/[0.07] blur-[100px] dark:bg-fcb/[0.12]" />
           </div>

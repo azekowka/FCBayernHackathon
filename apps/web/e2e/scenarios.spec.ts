@@ -34,10 +34,15 @@ test.describe('every page', () => {
     test(`${path} has no horizontal overflow`, async ({ page }) => {
       await page.goto(path);
       await page.waitForLoadState('networkidle');
-      const overflow = await page.evaluate(
-        () => document.documentElement.scrollWidth - window.innerWidth,
-      );
-      expect(overflow).toBeLessThanOrEqual(1);
+      // Compare against the device width: on mobile an over-wide element silently widens
+      // the layout viewport, so scrollWidth − innerWidth alone would still read 0.
+      const width = page.viewportSize()?.width ?? 0;
+      const { scroll, inner } = await page.evaluate(() => ({
+        scroll: document.documentElement.scrollWidth,
+        inner: window.innerWidth,
+      }));
+      expect(scroll - width).toBeLessThanOrEqual(1);
+      expect(inner).toBe(width);
     });
   }
 });
@@ -65,9 +70,9 @@ test('ballot: member compares odds, applies smart, runs and verifies a draw, rea
 
   // Switching to a first-time member lowers the visible odds.
   const klassiker = odds.locator('li', { hasText: 'Borussia Dortmund' });
-  const lenaOdds = await klassiker.locator('.display').first().innerText();
+  const lenaOdds = await klassiker.getByTestId('odds-pct').innerText();
   await page.getByRole('radio', { name: /Jonas Weber/ }).click();
-  await expect(klassiker.locator('.display').first()).not.toHaveText(lenaOdds);
+  await expect(klassiker.getByTestId('odds-pct')).not.toHaveText(lenaOdds);
   await page.getByRole('radio', { name: /Lena Hofmann/ }).click();
 
   await page.getByRole('button', { name: 'Use smart picks' }).click();
@@ -85,7 +90,10 @@ test('ballot: member compares odds, applies smart, runs and verifies a draw, rea
 
   const letter = page.locator('section[aria-labelledby="letter-title"] article');
   await expect(letter).toContainText('Servus Lena', { timeout: 15_000 });
-  await page.getByRole('radio', { name: 'EN', exact: true }).click();
+  await page
+    .locator('section[aria-labelledby="letter-title"]')
+    .getByRole('radio', { name: 'EN', exact: true })
+    .click();
   await expect(letter).toContainText(/applications competed for/, { timeout: 15_000 });
   expect(errors).toEqual([]);
 });
@@ -97,7 +105,7 @@ test('recycling: forecast map, layer switch and simulation are explorable', asyn
   await page.getByRole('button', { name: /^Block 112 ·/ }).focus();
   await expect(page.getByText(/risk · ≈\d+ empty of/)).toBeVisible();
   await page.getByRole('radio', { name: 'Seats recovered' }).click();
-  await expect(page.getByText(/Brighter teal/)).toBeVisible();
+  await expect(page.getByText(/Deeper blue/)).toBeVisible();
   await expect(page.getByRole('img', { name: /Cumulative seats back in use/ })).toBeVisible();
   await expect(page.getByText('Extra fans in the Arena')).toBeVisible();
 });
@@ -190,6 +198,32 @@ test('journey: free text becomes a plan, a strike re-plans it, questions get gro
     /google\.com\/maps\/dir/,
   );
   expect(errors).toEqual([]);
+});
+
+test('language: switching to Deutsch translates the page and persists', async ({ page }) => {
+  const errors = collectErrors(page);
+  await page.goto('/ballot');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(/Know your odds/);
+  const lang = page.getByRole('radiogroup', { name: 'Language' });
+  if (!(await lang.isVisible())) await page.getByRole('button', { name: 'Open menu' }).click();
+  await page
+    .getByRole('radiogroup', { name: 'Language' })
+    .getByRole('radio', { name: 'DE' })
+    .click();
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(/Kenne deine Chancen/);
+  await expect(page.locator('html')).toHaveAttribute('lang', 'de');
+  await page.goto('/journey');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(/Vom Sofa bis zum Sitz/);
+  await expect(page.getByRole('button', { name: /Plan es für mich/ })).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
+test('theme: the colour theme toggles between light and dark', async ({ page }) => {
+  await page.goto('/');
+  const html = page.locator('html');
+  const before = (await html.getAttribute('class')) ?? '';
+  await page.getByRole('button', { name: 'Toggle colour theme' }).click();
+  await expect(html).not.toHaveAttribute('class', before);
 });
 
 test('api: health is public, inputs are validated', async ({ request }) => {

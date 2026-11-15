@@ -80,7 +80,7 @@ export default async function HomePage() {
     <div className="pb-8">
       {/* ── Hero ─────────────────────────────────────────────── */}
       <section className="grid items-center gap-10 pt-10 pb-14 md:pt-16 lg:grid-cols-[1.05fr_1fr] lg:gap-14 lg:pt-20">
-        <div>
+        <div className="min-w-0">
           <p className="inline-flex max-w-full animate-rise items-center gap-2 rounded-full bg-ink-850 py-1 pr-3 pl-1 text-xs font-medium text-fg-2 shadow-[var(--shadow-card)]">
             <span className="flex shrink-0 items-center gap-1 rounded-full bg-fcb px-2 py-0.5 text-[11px] font-semibold text-white">
               <Sparkles className="size-3" aria-hidden /> Gemini
@@ -102,7 +102,7 @@ export default async function HomePage() {
             </ButtonLink>
           </div>
         </div>
-        <div className="animate-rise [animation-delay:120ms]">
+        <div className="min-w-0 animate-rise [animation-delay:120ms]">
           <ArenaPulse target={h.recycling.extraFansPerMatch} />
         </div>
       </section>

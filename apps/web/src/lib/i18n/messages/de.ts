@@ -235,10 +235,6 @@ export const de: Messages = {
       waitlist: (n: string) => `Warteliste #${n}`,
       lossBody: (rank: string, of: string, a: number, b: number, w: string) =>
         `Losposition ${rank} von ${of}. Gibt ein Dauerkarteninhaber seinen Platz frei, bietet Kein Platz bleibt leer ihn in dieser Reihenfolge an. Pechvogel ${a} → ${b}, Gewicht → ${w}× für jede künftige Ziehung.`,
-      winToast: 'Du bist dabei! 🎉',
-      winToastSub: (match: string) => `FC Bayern gegen ${match} — zum Nennwert.`,
-      lossToast: 'Auf der Warteliste',
-      lossToastSub: 'Dein Pechvogel-Bonus ist gerade gestiegen.',
       applications: 'Bewerbungen',
       seatsDrawn: 'Gezogene Plätze',
       yourChance: 'Deine Chance',
@@ -446,7 +442,6 @@ export const de: Messages = {
       'Mit dem Rad aus Schwabing, Block 112, danach schnell heim',
     ],
     nothing: 'Nichts erkannt — unten anpassen.',
-    planned: 'Plan aktualisiert',
     fields: {
       block: (b: string) => `Block ${b}`,
       kids: 'mit Kindern',

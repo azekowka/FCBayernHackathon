@@ -233,10 +233,6 @@ export const en = {
       waitlist: (n: string) => `Waitlist #${n}`,
       lossBody: (rank: string, of: string, a: number, b: number, w: string) =>
         `Draw position ${rank} of ${of}. If a season-ticket holder releases a seat, Kein Platz bleibt leer offers it in this order. Pechvogel ${a} → ${b}, weight → ${w}× for every future draw.`,
-      winToast: 'You’re in! 🎉',
-      winToastSub: (match: string) => `FC Bayern vs ${match} — at face value.`,
-      lossToast: 'On the waitlist',
-      lossToastSub: 'Your Pechvogel bonus just went up.',
       applications: 'Applications',
       seatsDrawn: 'Seats drawn',
       yourChance: 'Your chance',
@@ -441,7 +437,6 @@ export const en = {
       'Mit dem Rad aus Schwabing, Block 112, danach schnell heim',
     ],
     nothing: 'Nothing recognised — adjust below.',
-    planned: 'Plan updated',
     fields: {
       block: (b: string) => `Block ${b}`,
       kids: 'with kids',
