@@ -59,7 +59,7 @@ export function ArenaPulse({ target }: { target: number }) {
   useEffect(() => {
     if (reduce || !inView) return;
     // Hold the empty arena briefly, refill block by block, hold full, loop.
-    const delay = step === 0 ? 1100 : step >= EMPTY_BLOCKS ? 2600 : 380;
+    const delay = step === 0 ? 1100 : step >= EMPTY_BLOCKS ? 2600 : 560;
     const id = setTimeout(() => setStep((s) => (s >= EMPTY_BLOCKS ? 0 : s + 1)), delay);
     return () => clearTimeout(id);
   }, [step, inView, reduce]);
@@ -84,6 +84,10 @@ export function ArenaPulse({ target }: { target: number }) {
               prefix="+"
               locales={locale === 'de' ? 'de-DE' : 'en-GB'}
               className="tabular"
+              trend={1}
+              // Settles well inside the 560ms step, so the count always reads cleanly.
+              spinTiming={{ duration: 300, easing: 'cubic-bezier(0.23, 1, 0.32, 1)' }}
+              transformTiming={{ duration: 300, easing: 'cubic-bezier(0.23, 1, 0.32, 1)' }}
             />
           </p>
           <p className="mt-2 text-sm text-fg-2">{t.home.arenaLabel}</p>
