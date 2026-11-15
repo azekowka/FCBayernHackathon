@@ -21,7 +21,7 @@ const BUBBLE = {
 
 function AppBar({ title, subtitle }: { title: string; subtitle: string }) {
   return (
-    <div className="flex items-center gap-2.5 border-b hairline px-4 pt-1 pb-3">
+    <div className="flex items-center gap-2.5 border-b hairline px-4 pt-1 pb-3 max-sm:pt-3">
       <LogoMark size={32} />
       <div className="min-w-0 leading-tight">
         <p className="truncate text-sm font-semibold text-fg">{title}</p>
