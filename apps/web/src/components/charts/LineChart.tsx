@@ -165,7 +165,9 @@ export function LineChart({
                 d={d}
                 fill="none"
                 stroke={s.color}
-                strokeWidth={2}
+                strokeWidth={2.25}
+                pathLength={1}
+                className="chart-draw"
                 strokeLinejoin="round"
                 strokeLinecap="round"
               />
@@ -246,7 +248,7 @@ export function LineChart({
       {hoverX !== null && (
         <div
           role="status"
-          className="pointer-events-none absolute top-8 min-w-36 rounded-lg border border-line-strong bg-ink-950/95 px-3 py-2 text-xs shadow-lg"
+          className="pointer-events-none absolute top-8 min-w-36 rounded-xl bg-ink-850/95 px-3 py-2 text-xs shadow-[var(--shadow-pop)] backdrop-blur"
           style={{
             left: `${(x(hoverX) / W) * 100}%`,
             transform: x(hoverX) > W * 0.6 ? 'translateX(calc(-100% - 12px))' : 'translateX(12px)',

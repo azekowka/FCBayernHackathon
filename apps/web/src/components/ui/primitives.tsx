@@ -186,14 +186,14 @@ export function Stat({
             : 'bg-fg-3/50';
   return (
     <div className={cn('card relative min-w-0 px-4 py-4 md:px-5', className)}>
-      <p className="flex items-center gap-2 text-xs font-medium text-fg-3">
-        <span aria-hidden className={cn('size-1.5 shrink-0 rounded-full', dot)} />
-        <span className="truncate">{label}</span>
+      <p className="flex items-start gap-2 text-xs font-medium text-fg-3">
+        <span aria-hidden className={cn('mt-[5px] size-1.5 shrink-0 rounded-full', dot)} />
+        <span className="line-clamp-2 text-pretty">{label}</span>
       </p>
       <div className="display tabular mt-2 text-[28px] leading-none text-fg md:text-[32px]">
         {value}
       </div>
-      {sub && <p className="mt-2 truncate text-xs text-fg-3">{sub}</p>}
+      {sub && <p className="mt-2 text-xs text-pretty text-fg-3">{sub}</p>}
     </div>
   );
 }

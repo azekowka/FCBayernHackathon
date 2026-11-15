@@ -158,6 +158,18 @@
     --k-warn: #9a5800;
     --k-info: #0066b2;
 
+    /* Sequential no-show risk ramp (light → Bayern red) and recovered-seats ramp (blue). */
+    --risk-0: #fbe4e8;
+    --risk-1: #f6b8c4;
+    --risk-2: #ee7d93;
+    --risk-3: #dc3555;
+    --risk-4: #a3001f;
+    --risk-none: #e4e7ec;
+    --rec-0: #dbe8f6;
+    --rec-1: #8fb8e4;
+    --rec-2: #3d84cf;
+    --rec-3: #0057a0;
+
     --k-shadow-card:
       0 0 0 1px rgb(10 20 40 / 0.06), 0 1px 2px rgb(10 20 40 / 0.04),
       0 12px 32px -16px rgb(10 20 40 / 0.12);
@@ -189,6 +201,17 @@
     --k-ok: #3fd99a;
     --k-warn: #f2b544;
     --k-info: #8cbcff;
+
+    --risk-0: #2a1a26;
+    --risk-1: #4a1d2d;
+    --risk-2: #742235;
+    --risk-3: #a8283f;
+    --risk-4: #f0405e;
+    --risk-none: #1a2337;
+    --rec-0: #13294a;
+    --rec-1: #1b4a80;
+    --rec-2: #2a6fbd;
+    --rec-3: #4fa0f5;
 
     --k-shadow-card:
       0 0 0 1px rgb(255 255 255 / 0.06), inset 0 1px 0 0 rgb(255 255 255 / 0.04),
@@ -253,6 +276,13 @@
     .animate-pop {
       animation-name: fade !important;
     }
+    .chart-bar {
+      animation-name: fade !important;
+    }
+    .chart-draw {
+      animation-name: fade !important;
+      stroke-dasharray: none !important;
+    }
     .animate-marquee,
     .animate-pulse-ring,
     .animate-live {
@@ -263,6 +293,29 @@
     from {
       opacity: 0;
     }
+  }
+}
+
+/* Lines draw themselves once on mount — explanatory, seen occasionally. */
+.chart-draw {
+  stroke-dasharray: 1;
+  animation: chart-draw 1.1s var(--ease-in-out) both;
+}
+/* Bars grow from their baseline once on mount. */
+.chart-bar {
+  animation: chart-bar 700ms var(--ease-out) both;
+}
+@keyframes chart-bar {
+  from {
+    scale: 0 1;
+  }
+}
+@keyframes chart-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
   }
 }
 

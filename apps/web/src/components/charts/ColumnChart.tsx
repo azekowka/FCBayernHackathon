@@ -115,7 +115,7 @@ export function ColumnChart({
       {active && hover !== null && (
         <div
           role="status"
-          className="pointer-events-none absolute top-0 rounded-lg border border-line-strong bg-ink-950/95 px-2.5 py-1.5 text-xs shadow-lg"
+          className="pointer-events-none absolute top-0 rounded-xl bg-ink-850/95 px-2.5 py-1.5 text-xs shadow-[var(--shadow-pop)] backdrop-blur"
           style={{
             left: `${((pad.l + band * hover + band / 2) / W) * 100}%`,
             transform: 'translateX(-50%)',
