@@ -519,6 +519,111 @@ export const en = {
     askPlaceholder: 'Ask anything about your matchday…',
     ask: 'Ask',
   },
+  how: {
+    metaTitle: 'How it works',
+    metaDescription: 'Architecture, grounding loop, privacy and pilot plan behind Kickoff.',
+    eyebrow: 'Architecture & responsible AI',
+    title: 'Engines decide. Gemini explains.',
+    lead: 'Every number a fan sees — odds, draw positions, seats, queue minutes — comes from deterministic, unit-tested engines. Gemini only turns those facts into conversation, in the fan’s language. If it ever writes a number the engines didn’t produce, we throw the sentence away.',
+    systemTitle: 'System at a glance',
+    running: (s: string) => `Currently running: ${s}`,
+    runningDemo: 'offline demo templates — set GEMINI_API_KEY for live Gemini',
+    diagramRegion: 'Architecture diagram (scrollable)',
+    diagramTitle: 'Architecture diagram',
+    diagramDesc:
+      'The fan app calls typed API routes. Routes ask the deterministic core engines for facts, then the AI layer turns the facts into text with Gemini, checks every number, and falls back to templates when needed.',
+    boxes: {
+      app: [
+        'Fan app (Next.js)',
+        'Ballot · Recycling · Journey',
+        'Two-phone live room (SSE)',
+        'Source badge on every AI text',
+      ],
+      api: [
+        'API routes',
+        'zod-validated inputs',
+        'rate limits, body caps',
+        'facts recomputed server-side',
+        'commit–reveal draw secret',
+      ],
+      core: [
+        '@fcb/core engines',
+        'weighted verifiable draw',
+        'no-show model + matching',
+        'U6 crowd model + planner',
+        '73 tests · 99% coverage',
+      ],
+      ai: [
+        '@fcb/ai layer',
+        'prompts + JSON schemas',
+        'numbers guard',
+        'injection hygiene',
+        'EN/DE grounded fallback',
+      ],
+      gemini: ['Google Gemini', 'structured output', 'any language', 'timeouts → fallback'],
+    },
+    arrows: {
+      json: 'JSON',
+      inputs: 'inputs',
+      facts: 'facts',
+      prompt: 'prompt',
+      text: 'text',
+      verified: 'verified text',
+    },
+    diagramNote:
+      'Read left to right: the app never talks to Gemini directly, and Gemini never sees anything the engines didn’t compute. The engines run identically in the browser, on the server and in tests.',
+    loopEyebrow: 'The grounding loop',
+    loopTitle: 'Five steps behind every sentence',
+    loop: [
+      ['Compute', 'An engine produces structured facts — odds, draw position, queue minutes.'],
+      [
+        'Phrase',
+        'Gemini writes from those facts only, in the fan’s language, with a strict system prompt.',
+      ],
+      [
+        'Verify',
+        'Every multi-digit number in the reply must exist in the facts — or the reply is discarded.',
+      ],
+      [
+        'Fall back',
+        'Timeouts, invalid JSON or invented numbers switch to a grounded template instantly.',
+      ],
+      [
+        'Disclose',
+        'A badge tells the fan which path wrote the text: Gemini, demo, or safe fallback.',
+      ],
+    ] as [string, string][],
+    fanFirst: 'Fan-first by design',
+    fanFirstList: [
+      'No dynamic pricing — capacity is dynamic, prices are not. Recycled seats move at face value without fees.',
+      'Verifiable draws — SHA-256 commitment before the ballot closes; any member can recompute their own race time.',
+      'Privacy — opt-in signals only (calendar, attendance), no biometrics, no location tracking; the no-show estimate is built to run on-device.',
+      'Human in the loop — Gemini can only suggest; releasing a seat needs the fan’s tap.',
+      'Inclusion — groups never split, accessible spaces prioritised, step-free routing, youth fan-club gifting.',
+      'Transparency — published loyalty rules, offer windows and per-Pechvogel win rates after every draw.',
+    ],
+    pilotTitle: 'From prototype to pilot',
+    pilot: [
+      [
+        'Now',
+        'Working prototype: three products, full-size draws, live two-phone demo, offline-safe AI.',
+      ],
+      [
+        'Pilot · 1 match',
+        'One low-demand home match, 500 opt-in season-ticket holders. Measure release rate, refill rate, minutes to refill and fan satisfaction against the Ticket Exchange.',
+      ],
+      [
+        'Ballot phase',
+        'Publish odds and per-Pechvogel win rates for one ballot phase; co-design rules with the Fan Dialogue working group.',
+      ],
+      [
+        'Matchday',
+        'Swap the schematic network for Google Maps Routes and MVG live data through the same interfaces; run on Vertex AI / Cloud Run.',
+      ],
+    ] as [string, string][],
+    offline: 'Works offline in demo mode — the stage never depends on venue Wi-Fi.',
+    synthetic: 'All figures are illustrative model outputs on synthetic data, not FC Bayern data.',
+  },
   notFound: {
     code: '404',
     title: 'Offside — this page doesn’t exist.',

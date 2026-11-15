@@ -279,6 +279,9 @@
     .chart-bar {
       animation-name: fade !important;
     }
+    .flow-dash {
+      display: none;
+    }
     .chart-draw {
       animation-name: fade !important;
       stroke-dasharray: none !important;
@@ -301,6 +304,17 @@
   stroke-dasharray: 1;
   animation: chart-draw 1.1s var(--ease-in-out) both;
 }
+/* Dashes travelling along diagram arrows. */
+.flow-dash {
+  stroke-dasharray: 2 14;
+  animation: flow-dash 1.4s linear infinite;
+}
+@keyframes flow-dash {
+  to {
+    stroke-dashoffset: -32;
+  }
+}
+
 /* Bars grow from their baseline once on mount. */
 .chart-bar {
   animation: chart-bar 700ms var(--ease-out) both;

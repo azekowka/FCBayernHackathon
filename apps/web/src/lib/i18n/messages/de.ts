@@ -527,6 +527,116 @@ export const de: Messages = {
     askPlaceholder: 'Frag alles zu deinem Spieltag…',
     ask: 'Fragen',
   },
+  how: {
+    metaTitle: 'So funktioniert’s',
+    metaDescription:
+      'Architektur, Absicherungs-Schleife, Datenschutz und Pilotplan hinter Kickoff.',
+    eyebrow: 'Architektur & verantwortungsvolle KI',
+    title: 'Engines entscheiden. Gemini erklärt.',
+    lead: 'Jede Zahl, die ein Fan sieht — Chancen, Lospositionen, Plätze, Wartezeiten — stammt aus deterministischen, getesteten Engines. Gemini macht aus diesen Fakten nur ein Gespräch, in der Sprache des Fans. Schreibt es eine Zahl, die die Engines nicht berechnet haben, verwerfen wir den Satz.',
+    systemTitle: 'Das System im Überblick',
+    running: (s: string) => `Aktuell aktiv: ${s}`,
+    runningDemo: 'Offline-Demo-Vorlagen — GEMINI_API_KEY setzen für Gemini live',
+    diagramRegion: 'Architekturdiagramm (scrollbar)',
+    diagramTitle: 'Architekturdiagramm',
+    diagramDesc:
+      'Die Fan-App ruft typisierte API-Routen auf. Diese holen Fakten aus den deterministischen Engines, dann macht die KI-Schicht mit Gemini Text daraus, prüft jede Zahl und greift bei Bedarf auf Vorlagen zurück.',
+    boxes: {
+      app: [
+        'Fan-App (Next.js)',
+        'Losverfahren · Recycling · Anreise',
+        'Zwei-Handy-Liveraum (SSE)',
+        'Quellen-Badge an jedem KI-Text',
+      ],
+      api: [
+        'API-Routen',
+        'mit zod validierte Eingaben',
+        'Rate-Limits, Größenlimits',
+        'Fakten serverseitig berechnet',
+        'Commit-Reveal-Geheimnis',
+      ],
+      core: [
+        '@fcb/core Engines',
+        'gewichtete, prüfbare Ziehung',
+        'Leerplatz-Modell + Matching',
+        'U6-Andrang + Planer',
+        '73 Tests · 99 % Abdeckung',
+      ],
+      ai: [
+        '@fcb/ai Schicht',
+        'Prompts + JSON-Schemata',
+        'Zahlenwächter',
+        'Schutz vor Injection',
+        'geprüfte EN/DE-Vorlagen',
+      ],
+      gemini: ['Google Gemini', 'strukturierte Ausgabe', 'jede Sprache', 'Timeout → Vorlage'],
+    },
+    arrows: {
+      json: 'JSON',
+      inputs: 'Eingaben',
+      facts: 'Fakten',
+      prompt: 'Prompt',
+      text: 'Text',
+      verified: 'geprüfter Text',
+    },
+    diagramNote:
+      'Von links nach rechts lesen: Die App spricht nie direkt mit Gemini, und Gemini sieht nichts, was die Engines nicht berechnet haben. Die Engines laufen identisch im Browser, auf dem Server und in Tests.',
+    loopEyebrow: 'Die Absicherungs-Schleife',
+    loopTitle: 'Fünf Schritte hinter jedem Satz',
+    loop: [
+      [
+        'Berechnen',
+        'Eine Engine liefert strukturierte Fakten — Chancen, Losposition, Wartezeiten.',
+      ],
+      [
+        'Formulieren',
+        'Gemini schreibt nur aus diesen Fakten, in der Sprache des Fans, mit strengem System-Prompt.',
+      ],
+      [
+        'Prüfen',
+        'Jede mehrstellige Zahl der Antwort muss in den Fakten stehen — sonst wird sie verworfen.',
+      ],
+      [
+        'Absichern',
+        'Timeouts, ungültiges JSON oder erfundene Zahlen schalten sofort auf eine geprüfte Vorlage.',
+      ],
+      [
+        'Offenlegen',
+        'Ein Badge zeigt, wer den Text geschrieben hat: Gemini, Demo oder sichere Vorlage.',
+      ],
+    ] as [string, string][],
+    fanFirst: 'Fans zuerst — by Design',
+    fanFirstList: [
+      'Keine dynamischen Preise — die Kapazität ist dynamisch, die Preise nicht. Recycelte Plätze gehen ohne Gebühren zum Nennwert.',
+      'Prüfbare Ziehungen — SHA-256-Commitment vor Losschluss; jedes Mitglied kann seine Losnummer nachrechnen.',
+      'Datenschutz — nur freiwillige Signale (Kalender, Besuche), keine Biometrie, kein Standort-Tracking; die Prognose läuft auf dem Handy.',
+      'Der Mensch entscheidet — Gemini kann nur vorschlagen; die Freigabe braucht den Tipp des Fans.',
+      'Inklusion — Gruppen werden nie getrennt, barrierefreie Plätze zuerst, stufenfreie Wege, Spenden an Jugend-Fanclubs.',
+      'Transparenz — veröffentlichte Treue-Regeln, Angebotsfenster und Gewinnquoten je Pechvogel-Stufe nach jeder Ziehung.',
+    ],
+    pilotTitle: 'Vom Prototyp zum Pilot',
+    pilot: [
+      [
+        'Jetzt',
+        'Funktionierender Prototyp: drei Produkte, Ziehungen in voller Größe, Zwei-Handy-Livedemo, offline-sichere KI.',
+      ],
+      [
+        'Pilot · 1 Spiel',
+        'Ein Heimspiel mit geringer Nachfrage, 500 Dauerkarteninhaber mit Einwilligung. Gemessen werden Freigabe- und Wiederbelegungsquote, Minuten bis zur Neubelegung und Zufriedenheit — im Vergleich zur Ticketbörse.',
+      ],
+      [
+        'Losphase',
+        'Chancen und Gewinnquoten je Pechvogel-Stufe für eine Losphase veröffentlichen; Regeln mit der AG Fandialog gemeinsam gestalten.',
+      ],
+      [
+        'Spieltag',
+        'Das schematische Netz über dieselben Schnittstellen durch Google Maps Routes und MVG-Live-Daten ersetzen; Betrieb auf Vertex AI / Cloud Run.',
+      ],
+    ] as [string, string][],
+    offline: 'Funktioniert offline im Demo-Modus — die Bühne hängt nie vom WLAN der Location ab.',
+    synthetic:
+      'Alle Zahlen sind illustrative Modellwerte auf synthetischen Daten, keine Daten des FC Bayern.',
+  },
   notFound: {
     code: '404',
     title: 'Abseits — diese Seite gibt es nicht.',
