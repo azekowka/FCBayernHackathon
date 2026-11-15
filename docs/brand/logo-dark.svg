@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="96" viewBox="0 0 400 96" role="img" aria-label="Kickoff">
+  <g transform="translate(8 16)">
+    <rect width="64" height="64" rx="18" fill="#DC052D"/>
+    <rect width="64" height="32" rx="18" fill="#FFFFFF" fill-opacity="0.08"/>
+    <path d="M32 9v46" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round"/>
+    <circle cx="32" cy="32" r="14" fill="none" stroke="#FFFFFF" stroke-width="4"/>
+    <circle cx="32" cy="32" r="4.5" fill="#FFFFFF"/>
+  </g>
+  <text x="92" y="58" font-family="Inter, 'Helvetica Neue', Arial, sans-serif" font-size="46" font-weight="800" letter-spacing="-1.6" fill="#F3F5FA">Kickoff</text>
+  <text x="94" y="80" font-family="Inter, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="500" letter-spacing="0.4" fill="#8893A9">Fair tickets · full stands · easy matchdays</text>
+</svg>
