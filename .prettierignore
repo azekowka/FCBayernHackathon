@@ -6,3 +6,5 @@ playwright-report
 test-results
 *.pdf
 docs/screenshots
+.claude
+skills-lock.json

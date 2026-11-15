@@ -1,7 +1,7 @@
 {
-  "name": "fcb-fan-ai",
+  "name": "kickoff",
   "private": true,
-  "description": "Three Gemini-powered MVPs for the FC Bayern Fan AI-DEATION: FCB Fair Seat (transparent ballot + smart seat recycling) and the Matchday Journey Agent.",
+  "description": "Kickoff — three Gemini-powered prototypes for FC Bayern fans: a transparent loyalty ballot, smart seat recycling and a matchday journey agent.",
   "license": "MIT",
   "packageManager": "pnpm@10.28.0",
   "engines": {

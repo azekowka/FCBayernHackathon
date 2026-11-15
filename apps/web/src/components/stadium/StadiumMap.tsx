@@ -48,8 +48,8 @@ export function StadiumMap({
       >
         <defs>
           <linearGradient id="pitch" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#0f3b2e" />
-            <stop offset="1" stopColor="#0b2f25" />
+            <stop offset="0" stopColor="#1f8f52" />
+            <stop offset="1" stopColor="#177443" />
           </linearGradient>
           <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
             <feGaussianBlur stdDeviation="4" result="b" />
@@ -68,10 +68,10 @@ export function StadiumMap({
             width={pitch.w}
             height={pitch.h / 16}
             fill="#ffffff"
-            opacity={0.025}
+            opacity={0.06}
           />
         ))}
-        <g fill="none" stroke="#ffffff" strokeOpacity={0.35} strokeWidth={1}>
+        <g fill="none" stroke="#ffffff" strokeOpacity={0.6} strokeWidth={1}>
           <rect x={pitch.x + 6} y={pitch.y + 6} width={pitch.w - 12} height={pitch.h - 12} />
           <line x1={pitch.x + 6} x2={pitch.x + pitch.w - 6} y1={MAP.cy} y2={MAP.cy} />
           <circle cx={MAP.cx} cy={MAP.cy} r={pitch.w * 0.14} />
@@ -113,13 +113,13 @@ export function StadiumMap({
               key={b.id}
               d={blockPath(b.startAngle, b.endAngle, b.tier)}
               fill={fill(b)}
-              stroke={hi ? '#ffffff' : 'transparent'}
-              strokeWidth={hi ? 2 : 0}
+              stroke={hi ? 'var(--color-fg)' : 'transparent'}
+              strokeWidth={hi ? 2.5 : 0}
               filter={pulse ? 'url(#glow)' : undefined}
               tabIndex={0}
               role="button"
               aria-label={b.label}
-              className="cursor-pointer outline-none transition-[fill,opacity] duration-500 hover:opacity-80 focus-visible:stroke-white"
+              className="cursor-pointer outline-none transition-[fill,opacity] duration-300 hover:opacity-75 focus-visible:stroke-fg"
               onMouseEnter={() => setHover(b)}
               onMouseLeave={() => setHover(null)}
               onFocus={() => setHover(b)}
@@ -140,7 +140,7 @@ export function StadiumMap({
         aria-live="polite"
       >
         {hover && (
-          <div className="rounded-xl border border-line-strong bg-ink-950/95 px-3 py-2 text-xs shadow-xl">
+          <div className="animate-pop rounded-xl bg-ink-850/95 px-3 py-2 text-xs shadow-[var(--shadow-pop)] backdrop-blur">
             {tooltip(hover)}
           </div>
         )}

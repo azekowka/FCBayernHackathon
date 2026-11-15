@@ -1,10 +1,22 @@
 /**
- * Sequential, single-hue (red) ramp for no-show risk on the dark surface:
- * brighter = higher risk. Breaks are quintiles of the actual block risks so
+ * Sequential, single-hue (red) ramp for no-show risk — theme tokens, so it
+ * reads light→red on white and dark→red at night: stronger = higher risk. Breaks are quintiles of the actual block risks so
  * the map discriminates instead of painting one colour everywhere.
  */
-export const RISK_STEPS = ['#2a1a26', '#4a1d2d', '#742235', '#a8283f', '#e23a4e'] as const;
-export const NO_SEASON = '#1c2436';
+export const RISK_STEPS = [
+  'var(--risk-0)',
+  'var(--risk-1)',
+  'var(--risk-2)',
+  'var(--risk-3)',
+  'var(--risk-4)',
+] as const;
+export const NO_SEASON = 'var(--risk-none)';
+export const RECOVERED_STEPS = [
+  'var(--rec-0)',
+  'var(--rec-1)',
+  'var(--rec-2)',
+  'var(--rec-3)',
+] as const;
 
 export interface RiskScale {
   breaks: number[];

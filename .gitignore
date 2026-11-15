@@ -27,3 +27,4 @@ playwright/.cache/
 *.log
 .vercel
 .turbo
+apps/web/AGENTS.md

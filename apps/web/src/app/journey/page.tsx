@@ -1,20 +1,23 @@
+import { TrainFront } from 'lucide-react';
 import type { Metadata } from 'next';
 import { JourneyApp } from '@/components/journey/JourneyApp';
 import { PageHeader } from '@/components/ui/primitives';
+import { getMessages } from '@/lib/i18n/server';
 
-export const metadata: Metadata = {
-  title: 'Vom Sofa bis zum Sitz — Matchday Journey Agent',
-  description:
-    'When to leave, how full the U6 will be, the quickest gate and kiosk, and a staggered return that skips the crush.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getMessages();
+  return { title: t.journey.metaTitle, description: t.journey.metaDescription };
+}
 
-export default function JourneyPage() {
+export default async function JourneyPage() {
+  const { t } = await getMessages();
   return (
     <>
       <PageHeader
-        eyebrow="Matchday · Vom Sofa bis zum Sitz"
-        title="From sofa to seat — without the crush."
-        lead="Most of 75,000 fans squeeze through one U-Bahn line. The app is your ticket — now it becomes your journey: when to leave, which gate, where the queue is shortest, and when to head home so you’re not standing on the Esplanade for half an hour."
+        icon={<TrainFront className="size-3.5" aria-hidden />}
+        eyebrow={t.journey.eyebrow}
+        title={t.journey.title}
+        lead={t.journey.lead}
       />
       <JourneyApp />
     </>
