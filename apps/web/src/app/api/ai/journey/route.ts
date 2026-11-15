@@ -8,6 +8,7 @@ import { ORIGINS, getBlock, getOrigin, planJourney, type JourneyRequest } from '
 import { z } from 'zod';
 import { getAi } from '@/lib/server/ai';
 import { AI_BUCKET, HttpError, handler, json, readJson } from '@/lib/server/http';
+import { localizeFacts, tj } from '@/lib/i18n/journey';
 
 export const dynamic = 'force-dynamic';
 
@@ -65,12 +66,18 @@ export const POST = handler(AI_BUCKET, async (req: Request) => {
     );
   }
   const p = plan(body.request as JourneyRequest);
-  if (body.action === 'narrate') return json(await narrateJourney(ai, p.facts, body.language));
-  const timeline = p.timeline.map((s) => ({ clock: s.clock, title: s.title, detail: s.detail }));
+  const locale = body.language === 'de' ? 'de' : 'en';
+  const facts = localizeFacts(p.facts, locale);
+  if (body.action === 'narrate') return json(await narrateJourney(ai, facts, body.language));
+  const timeline = p.timeline.map((s) => ({
+    clock: s.clock,
+    title: tj(s.title, locale),
+    detail: tj(s.detail, locale),
+  }));
   return json(
     await answerJourneyQuestion(ai, {
       question: body.question,
-      facts: p.facts,
+      facts,
       timeline,
       language: body.language,
     }),

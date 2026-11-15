@@ -1,41 +1,47 @@
+'use client';
+
 import type { CrowdLevel, StepKind, TimelineStep } from '@fcb/core';
-import { Badge } from '@/components/ui/primitives';
+import { Badge, type Tone } from '@/components/ui/primitives';
 import { cn } from '@/lib/cn';
+import { useLocale } from '@/lib/i18n/client';
+import { crowdLabel, tj } from '@/lib/i18n/journey';
 
 const DOT: Record<StepKind, string> = {
   depart: 'bg-fg',
   walk: 'bg-fg-3',
   ride: 'bg-u6',
   drive: 'bg-viz-amber',
-  cycle: 'bg-viz-a',
+  cycle: 'bg-ok',
   arrive: 'bg-fg',
   gate: 'bg-fcb',
   food: 'bg-fcb',
   seat: 'bg-fcb',
-  kickoff: 'bg-white',
+  kickoff: 'bg-fcb',
   halftime: 'bg-fg-2',
-  fulltime: 'bg-white',
-  postmatch: 'bg-viz-a',
+  fulltime: 'bg-fg',
+  postmatch: 'bg-blue',
   return: 'bg-u6',
   home: 'bg-fg',
 };
 
-const CROWD: Record<CrowdLevel, { tone: 'green' | 'neutral' | 'amber' | 'red'; label: string }> = {
-  calm: { tone: 'green', label: 'Calm' },
-  busy: { tone: 'neutral', label: 'Busy' },
-  packed: { tone: 'amber', label: 'Packed' },
-  crush: { tone: 'red', label: 'Very full' },
+const CROWD_TONE: Record<CrowdLevel, Tone> = {
+  calm: 'green',
+  busy: 'neutral',
+  packed: 'amber',
+  crush: 'red',
 };
 
 /** The plan drawn like a U-Bahn line diagram: stops on a line, colour by mode. */
 export function Timeline({ steps }: { steps: readonly TimelineStep[] }) {
+  const { locale } = useLocale();
   return (
     <ol className="relative">
       {steps.map((s, i) => {
         const big =
           s.kind === 'kickoff' || s.kind === 'seat' || s.kind === 'depart' || s.kind === 'home';
+        const rideNext = steps[i + 1]?.kind === 'ride' || s.kind === 'ride';
         return (
-          <li key={s.id} className="grid grid-cols-[52px_22px_minmax(0,1fr)] gap-x-3">
+          <li key={s.id} className="grid grid-cols-[48px_22px_minmax(0,1fr)] gap-x-3">
             <time
               className={cn(
                 'tabular pt-0.5 text-right text-sm',
@@ -46,13 +52,19 @@ export function Timeline({ steps }: { steps: readonly TimelineStep[] }) {
             </time>
             <span className="relative flex justify-center" aria-hidden>
               {i < steps.length - 1 && (
-                <span className="absolute top-3 bottom-[-4px] w-[3px] rounded bg-line-strong" />
+                <span
+                  className={cn(
+                    'absolute top-3 bottom-[-4px] w-[3px] rounded-full',
+                    rideNext ? 'bg-u6' : 'bg-line-strong',
+                  )}
+                />
               )}
               <span
                 className={cn(
                   'relative mt-1 rounded-full ring-4 ring-ink-850',
                   DOT[s.kind],
                   big ? 'size-3.5' : 'size-2.5',
+                  s.kind === 'kickoff' && 'shadow-[0_0_0_6px_rgb(220_5_45/0.18)]',
                 )}
               />
             </span>
@@ -64,14 +76,14 @@ export function Timeline({ steps }: { steps: readonly TimelineStep[] }) {
                 )}
               >
                 {s.line && (
-                  <span className="rounded bg-[#1b5fa8] px-1.5 py-px text-[11px] font-bold text-white">
+                  <span className="rounded-md bg-u6 px-1.5 py-px text-[11px] font-bold text-white">
                     {s.line}
                   </span>
                 )}
-                {s.title}
-                {s.crowd && <Badge tone={CROWD[s.crowd].tone}>{CROWD[s.crowd].label}</Badge>}
+                {tj(s.title, locale)}
+                {s.crowd && <Badge tone={CROWD_TONE[s.crowd]}>{crowdLabel(s.crowd, locale)}</Badge>}
               </p>
-              <p className="mt-0.5 text-xs text-fg-3">{s.detail}</p>
+              <p className="mt-0.5 text-xs text-pretty text-fg-3">{tj(s.detail, locale)}</p>
             </div>
           </li>
         );
