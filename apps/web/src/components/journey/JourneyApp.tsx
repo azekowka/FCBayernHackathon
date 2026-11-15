@@ -2,7 +2,6 @@
 
 import {
   FIXTURES,
-  MODE_LABEL,
   ORIGINS,
   availableModes,
   buildStadium,
@@ -36,14 +35,24 @@ import {
   Utensils,
   Wand2,
 } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { LineChart } from '@/components/charts/LineChart';
 import { AiBadge, TypingDots } from '@/components/ui/AiBadge';
-import { RangeField, Segmented, SelectField, TextField, Toggle } from '@/components/ui/controls';
+import {
+  RangeField,
+  Segmented,
+  SelectField,
+  TextField,
+  Toggle,
+  inputClass,
+  textareaClass,
+} from '@/components/ui/controls';
 import { Badge, Button, Panel, Stat } from '@/components/ui/primitives';
 import { errorMessage, postJson } from '@/lib/api';
 import { cn } from '@/lib/cn';
-import { fmtMinutes } from '@/lib/format';
+import { useFormat, useLocale, useT } from '@/lib/i18n/client';
+import { modeLabel, placeLabel, tj } from '@/lib/i18n/journey';
 import type { AiPayload } from '@/lib/types';
 import { Timeline } from './Timeline';
 
@@ -55,11 +64,14 @@ const MODE_ICON: Record<Mode, typeof TrainFront> = {
   walk: Footprints,
 };
 const BLOCK_IDS = new Set(buildStadium().map((b) => b.id));
-const EXAMPLES = [
-  'Coming from Augsburg by train with my two kids, Block 214 — we want Brezn before the choreo',
-  'Landing at the airport at noon, Block 330, no rush afterwards',
-  'Mit dem Rad aus Schwabing, Block 112, danach schnell heim',
-];
+const DATE_TAG = { en: 'en-GB', de: 'de-DE' } as const;
+const EASE_OUT = [0.23, 1, 0.32, 1] as const;
+
+/** Stat-tile duration: "48 min" or "1:30 h" — short enough to never wrap. */
+function shortDuration(minutes: number): string {
+  const m = Math.max(0, Math.round(minutes));
+  return m < 60 ? `${m} min` : `${Math.floor(m / 60)}:${String(m % 60).padStart(2, '0')} h`;
+}
 
 interface Intent {
   originId: string | null;
@@ -73,6 +85,11 @@ interface Intent {
 }
 
 export function JourneyApp() {
+  const t = useT();
+  const f = useFormat();
+  const { locale } = useLocale();
+  const tj_ = t.journey;
+  const language = locale;
   const [fixtureId, setFixtureId] = useState(FIXTURES[0]?.id ?? '');
   const [originId, setOriginId] = useState('marienplatz');
   const [mode, setMode] = useState<Mode>('ubahn');
@@ -83,9 +100,8 @@ export function JourneyApp() {
   const [stepFree, setStepFree] = useState(false);
   const [postMatch, setPostMatch] = useState<PostMatchPreference>('auto');
   const [disruption, setDisruption] = useState<DisruptionId | null>(null);
-  const [language, setLanguage] = useState<'en' | 'de'>('en');
 
-  const fixture = FIXTURES.find((f) => f.id === fixtureId) ?? FIXTURES[0]!;
+  const fixture = FIXTURES.find((x) => x.id === fixtureId) ?? FIXTURES[0]!;
   const blockId = BLOCK_IDS.has(blockInput) ? blockInput : '112';
   const blockValid = BLOCK_IDS.has(blockInput);
   const origin = getOrigin(originId);
@@ -118,6 +134,7 @@ export function JourneyApp() {
   );
   const plan = useMemo(() => planJourney(request), [request]);
   const key = JSON.stringify([request, language]);
+  const L = (s: string) => tj(s, locale);
 
   // ── Gemini narration (debounced; loading is derived, not set in the effect) ──
   const [narration, setNarration] = useState<{
@@ -127,7 +144,7 @@ export function JourneyApp() {
   } | null>(null);
   useEffect(() => {
     const ctrl = new AbortController();
-    const t = setTimeout(() => {
+    const timer = setTimeout(() => {
       postJson<AiPayload<string>>(
         '/api/ai/journey',
         { action: 'narrate', request, language },
@@ -139,7 +156,7 @@ export function JourneyApp() {
         });
     }, 350);
     return () => {
-      clearTimeout(t);
+      clearTimeout(timer);
       ctrl.abort();
     };
   }, [key, request, language]);
@@ -166,37 +183,37 @@ export function JourneyApp() {
       const fields: string[] = [];
       if (v.originId) {
         setOriginId(v.originId);
-        fields.push(getOrigin(v.originId).label);
+        fields.push(placeLabel(getOrigin(v.originId).label, locale));
         const avail = availableModes(getOrigin(v.originId));
         if (!v.mode && !avail.includes(mode)) setMode(avail[0] as Mode);
       }
       if (v.mode) {
         setMode(v.mode);
-        fields.push(MODE_LABEL[v.mode]);
+        fields.push(tj_.modes[v.mode]);
       }
       if (v.blockId && BLOCK_IDS.has(v.blockId)) {
         setBlockInput(v.blockId);
-        fields.push(`Block ${v.blockId}`);
+        fields.push(tj_.fields.block(v.blockId));
       }
       if (v.withKids !== null) {
         setWithKids(v.withKids);
-        if (v.withKids) fields.push('with kids');
+        if (v.withKids) fields.push(tj_.fields.kids);
       }
       if (v.wantsFood !== null) {
         setWantsFood(v.wantsFood);
-        fields.push(v.wantsFood ? 'food stop' : 'no food');
+        fields.push(v.wantsFood ? tj_.fields.food : tj_.fields.noFood);
       }
       if (v.stepFree !== null) {
         setStepFree(v.stepFree);
-        if (v.stepFree) fields.push('step-free');
+        if (v.stepFree) fields.push(tj_.fields.stepFree);
       }
       if (v.seatedBy !== null) {
         setSeatedBy(v.seatedBy);
-        fields.push(`seated ${v.seatedBy} min early`);
+        fields.push(tj_.fields.seated(v.seatedBy));
       }
       if (v.postMatch) {
         setPostMatch(v.postMatch);
-        fields.push(v.postMatch === 'asap' ? 'straight home' : 'no rush after');
+        fields.push(v.postMatch === 'asap' ? tj_.fields.asap : tj_.fields.relaxed);
       }
       setParsed({ fields, source: res.source });
     } catch (e) {
@@ -232,6 +249,7 @@ export function JourneyApp() {
   };
 
   const c = plan.chosen;
+  const chosenMode = modeLabel(c.mode, c.modeLabel, locale);
   const rec = plan.postMatch.find((o) => o.recommended) ?? plan.postMatch[0]!;
   const usesU6 = c.legs.some((l) => l.crowdSensitive);
   const crowdLeg = c.legs.findIndex((l) => l.crowdSensitive);
@@ -242,9 +260,10 @@ export function JourneyApp() {
     <div className="grid gap-6 lg:grid-cols-[380px_minmax(0,1fr)]">
       <aside className="flex flex-col gap-6" aria-label="Your matchday">
         <Panel
+          className="relative overflow-hidden"
           title={
             <span className="inline-flex items-center gap-2">
-              <Sparkles className="size-4 text-bad" aria-hidden /> Tell Gemini about your matchday
+              <Sparkles className="size-4 text-bad" aria-hidden /> {tj_.tellTitle}
             </span>
           }
         >
@@ -255,7 +274,7 @@ export function JourneyApp() {
             }}
           >
             <label htmlFor="journey-text" className="sr-only">
-              Describe your matchday
+              {tj_.describe}
             </label>
             <textarea
               id="journey-text"
@@ -263,20 +282,21 @@ export function JourneyApp() {
               onChange={(e) => setText(e.target.value)}
               maxLength={600}
               rows={3}
-              placeholder="e.g. From Augsburg by train with my kids, Block 214, we want food before the choreo"
-              className="w-full resize-none rounded-xl border border-line-strong bg-ink-900 p-3 text-sm text-fg placeholder:text-fg-3 focus:border-fcb-glow"
+              enterKeyHint="go"
+              placeholder={tj_.placeholder}
+              className={textareaClass}
             />
-            <Button type="submit" className="mt-2 w-full" disabled={parsing || !text.trim()}>
+            <Button type="submit" className="mt-2.5 w-full" disabled={parsing || !text.trim()}>
               {parsing ? (
-                <TypingDots label="Understanding" />
+                <TypingDots label={tj_.understanding} />
               ) : (
                 <Wand2 className="size-4" aria-hidden />
               )}{' '}
-              Plan it for me
+              {tj_.planIt}
             </Button>
           </form>
           <div className="mt-3 flex flex-wrap gap-1.5">
-            {EXAMPLES.map((ex) => (
+            {tj_.examples.map((ex) => (
               <button
                 key={ex}
                 type="button"
@@ -284,7 +304,7 @@ export function JourneyApp() {
                   setText(ex);
                   void runParse(ex);
                 }}
-                className="rounded-full border border-line-strong px-2.5 py-1 text-left text-[11px] text-fg-3 hover:border-fg-3 hover:text-fg-2"
+                className="press rounded-full bg-ink-800 px-2.5 py-1 text-left text-[11px] text-fg-2 hover:bg-ink-750 hover:text-fg"
               >
                 {ex.length > 46 ? `${ex.slice(0, 44)}…` : ex}
               </button>
@@ -294,13 +314,18 @@ export function JourneyApp() {
             <div className="mt-3 flex flex-wrap items-center gap-1.5" aria-live="polite">
               <AiBadge source={parsed.source} />
               {parsed.fields.length ? (
-                parsed.fields.map((f) => (
-                  <Badge key={f} tone="teal">
-                    {f}
+                parsed.fields.map((x, i) => (
+                  <Badge
+                    key={x}
+                    tone="red"
+                    className="animate-pop"
+                    style={{ animationDelay: `${Math.min(i, 5) * 40}ms` }}
+                  >
+                    {x}
                   </Badge>
                 ))
               ) : (
-                <span className="text-xs text-fg-3">Nothing recognised — adjust below.</span>
+                <span className="text-xs text-fg-3">{tj_.nothing}</span>
               )}
             </div>
           )}
@@ -311,21 +336,22 @@ export function JourneyApp() {
           )}
         </Panel>
 
-        <Panel title="Your trip">
+        <Panel title={tj_.tripTitle}>
           <div className="grid gap-4">
             <SelectField
-              label="Match"
+              label={tj_.match}
               value={fixtureId}
               onChange={(e) => setFixtureId(e.target.value)}
             >
-              {FIXTURES.map((f) => (
-                <option key={f.id} value={f.id}>
-                  {f.opponent} — {formatMatchDate(f.kickoff)}, {clockAt(f.kickoff, 0)}
+              {FIXTURES.map((x) => (
+                <option key={x.id} value={x.id}>
+                  {x.opponent} — {formatMatchDate(x.kickoff, DATE_TAG[locale])},{' '}
+                  {clockAt(x.kickoff, 0)}
                 </option>
               ))}
             </SelectField>
             <SelectField
-              label="Starting from"
+              label={tj_.from}
               value={originId}
               onChange={(e) => {
                 setOriginId(e.target.value);
@@ -335,14 +361,14 @@ export function JourneyApp() {
             >
               {ORIGINS.map((o) => (
                 <option key={o.id} value={o.id}>
-                  {o.label} · {o.area}
+                  {placeLabel(o.label, locale)} · {o.area}
                 </option>
               ))}
             </SelectField>
             <div>
-              <p className="mb-1.5 text-xs font-medium text-fg-3">Getting there</p>
+              <p className="mb-1.5 text-xs font-medium text-fg-3">{tj_.gettingThere}</p>
               <Segmented<Mode>
-                label="Travel mode"
+                label={tj_.travelMode}
                 value={request.mode}
                 onChange={setMode}
                 size="sm"
@@ -350,25 +376,18 @@ export function JourneyApp() {
                   const Icon = MODE_ICON[m];
                   return {
                     value: m,
-                    label:
-                      m === 'ubahn'
-                        ? 'U-Bahn'
-                        : m === 'fanbus'
-                          ? 'Fan bus'
-                          : m === 'walk'
-                            ? 'Walk'
-                            : m === 'car'
-                              ? 'Car'
-                              : 'Bike',
+                    label: tj_.modes[m],
                     icon: <Icon className="size-3.5" aria-hidden />,
                     disabled: !modes.includes(m),
-                    hint: modes.includes(m) ? undefined : `Not available from ${origin.label}`,
+                    hint: modes.includes(m)
+                      ? undefined
+                      : tj_.notFrom(placeLabel(origin.label, locale)),
                   };
                 })}
               />
             </div>
             <TextField
-              label="Your block"
+              label={tj_.block}
               inputMode="numeric"
               maxLength={3}
               value={blockInput}
@@ -382,13 +401,13 @@ export function JourneyApp() {
             >
               {blockValid
                 ? plan.block.stand === 'Süd' && plan.block.kind === 'standing'
-                  ? 'Südkurve — standing'
-                  : `${plan.block.stand} · ${plan.block.tier} tier`
-                : 'Unknown block — using 112 for now (101–140, 201–232, 301–344).'}
+                  ? tj_.blockSud
+                  : tj_.blockTier(plan.block.stand, tj_.tiers[plan.block.tier] ?? plan.block.tier)
+                : tj_.blockUnknown}
             </p>
             <RangeField
-              label="In my seat before kick-off"
-              valueLabel={`${seatedBy} min${seatedBy >= 30 ? ' · choreo' : ''}`}
+              label={tj_.seatedBy}
+              valueLabel={`${seatedBy} min${seatedBy >= 30 ? ` · ${tj_.choreo}` : ''}`}
               min={10}
               max={60}
               step={5}
@@ -399,169 +418,171 @@ export function JourneyApp() {
               <Toggle
                 checked={wantsFood}
                 onChange={setWantsFood}
-                label="Food before kick-off"
+                label={tj_.food}
                 icon={<Utensils className="size-4" />}
               />
               <Toggle
                 checked={withKids}
                 onChange={setWithKids}
-                label="With kids"
-                description="Avoids the worst crowds"
+                label={tj_.kids}
+                description={tj_.kidsSub}
                 icon={<Baby className="size-4" />}
               />
               <Toggle
                 checked={stepFree}
                 onChange={setStepFree}
-                label="Step-free route"
+                label={tj_.stepFree}
                 icon={<Accessibility className="size-4" />}
               />
             </div>
             <div>
-              <p className="mb-1.5 text-xs font-medium text-fg-3">After the final whistle</p>
+              <p className="mb-1.5 text-xs font-medium text-fg-3">{tj_.afterWhistle}</p>
               <Segmented<PostMatchPreference>
-                label="After the match"
+                label={tj_.afterMatch}
                 size="sm"
                 value={postMatch}
                 onChange={setPostMatch}
                 options={[
-                  { value: 'auto', label: 'Smartest' },
-                  { value: 'asap', label: 'Straight home' },
-                  { value: 'relaxed', label: 'No rush' },
+                  { value: 'auto', label: tj_.smartest },
+                  { value: 'asap', label: tj_.straightHome },
+                  { value: 'relaxed', label: tj_.noRush },
                 ]}
               />
             </div>
           </div>
         </Panel>
 
-        <Panel
-          title="Matchday surprises"
-          subtitle="Simulate a disruption — the agent re-plans live"
-        >
-          <div className="grid gap-2" role="group" aria-label="Disruptions">
+        <Panel title={tj_.surprisesTitle} subtitle={tj_.surprisesSub}>
+          <div className="grid gap-2" role="group" aria-label={tj_.disruptions}>
             {(
               [
-                { id: 'u6-strike', label: 'Public transport strike', icon: AlertTriangle },
-                {
-                  id: 'u6-north-closure',
-                  label: 'U6 closed past Kieferngarten',
-                  icon: Construction,
-                },
-                { id: 'heavy-rain', label: 'Heavy rain at kick-off', icon: CloudRain },
+                { id: 'u6-strike', label: tj_.strike, icon: AlertTriangle },
+                { id: 'u6-north-closure', label: tj_.closure, icon: Construction },
+                { id: 'heavy-rain', label: tj_.rain, icon: CloudRain },
               ] as const
-            ).map((d) => (
-              <button
-                key={d.id}
-                type="button"
-                aria-pressed={disruption === d.id}
-                onClick={() => setDisruption((cur) => (cur === d.id ? null : d.id))}
-                className={cn(
-                  'flex items-center gap-2.5 rounded-xl border px-3 py-2.5 text-left text-sm transition-colors',
-                  disruption === d.id
-                    ? 'border-fcb/60 bg-fcb/10 text-fg'
-                    : 'border-line-strong text-fg-2 hover:border-fg-3',
-                )}
-              >
-                <d.icon
-                  className={cn('size-4', disruption === d.id ? 'text-bad' : 'text-fg-3')}
-                  aria-hidden
-                />{' '}
-                {d.label}
-              </button>
-            ))}
+            ).map((d) => {
+              const on = disruption === d.id;
+              return (
+                <button
+                  key={d.id}
+                  type="button"
+                  aria-pressed={on}
+                  onClick={() => setDisruption((cur) => (cur === d.id ? null : d.id))}
+                  className={cn(
+                    'press flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-sm',
+                    on
+                      ? 'bg-fcb/[0.07] text-fg shadow-[inset_0_0_0_1px_rgb(220_5_45/0.45)]'
+                      : 'text-fg-2 shadow-[inset_0_0_0_1px_var(--color-line-strong)] hover:bg-ink-800',
+                  )}
+                >
+                  <d.icon className={cn('size-4', on ? 'text-bad' : 'text-fg-3')} aria-hidden />
+                  <span className="flex-1">{d.label}</span>
+                  <span
+                    aria-hidden
+                    className={cn(
+                      'size-2 rounded-full transition-[transform,opacity] duration-200 ease-[var(--ease-out)]',
+                      on ? 'scale-100 bg-fcb opacity-100' : 'scale-50 opacity-0',
+                    )}
+                  />
+                </button>
+              );
+            })}
           </div>
         </Panel>
       </aside>
 
       <div className="flex min-w-0 flex-col gap-6">
-        {plan.alerts.map((a) => (
-          <div
-            key={a.title}
-            role="alert"
-            className={cn(
-              'flex gap-3 rounded-2xl border px-4 py-3',
-              a.severity === 'critical'
-                ? 'border-fcb/60 bg-fcb/10'
-                : a.severity === 'warning'
-                  ? 'border-viz-amber/60 bg-viz-amber/10'
-                  : 'border-u6/50 bg-u6/10',
-            )}
-          >
-            {a.severity === 'info' ? (
-              <Info className="mt-0.5 size-5 shrink-0 text-info" aria-hidden />
-            ) : (
-              <AlertTriangle
-                className={cn(
-                  'mt-0.5 size-5 shrink-0',
-                  a.severity === 'critical' ? 'text-bad' : 'text-warn',
-                )}
-                aria-hidden
-              />
-            )}
-            <div>
-              <p className="font-semibold text-fg">{a.title}</p>
-              <p className="text-sm text-fg-2">{a.detail}</p>
-            </div>
-          </div>
-        ))}
+        <AnimatePresence initial={false} mode="popLayout">
+          {plan.alerts.map((a) => (
+            <motion.div
+              key={a.title}
+              role="alert"
+              initial={{ opacity: 0, y: -8, filter: 'blur(4px)' }}
+              animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+              exit={{ opacity: 0, transition: { duration: 0.15 } }}
+              transition={{ duration: 0.3, ease: EASE_OUT }}
+              className={cn(
+                'flex gap-3 rounded-2xl px-4 py-3.5 ring-1 ring-inset',
+                a.severity === 'critical'
+                  ? 'bg-fcb/[0.07] ring-fcb/35'
+                  : a.severity === 'warning'
+                    ? 'bg-viz-amber/10 ring-viz-amber/40'
+                    : 'bg-blue/[0.07] ring-blue/30',
+              )}
+            >
+              {a.severity === 'info' ? (
+                <Info className="mt-0.5 size-5 shrink-0 text-info" aria-hidden />
+              ) : (
+                <AlertTriangle
+                  className={cn(
+                    'mt-0.5 size-5 shrink-0',
+                    a.severity === 'critical' ? 'text-bad' : 'text-warn',
+                  )}
+                  aria-hidden
+                />
+              )}
+              <div>
+                <p className="font-semibold text-fg">{L(a.title)}</p>
+                <p className="text-sm text-fg-2">{L(a.detail)}</p>
+              </div>
+            </motion.div>
+          ))}
+        </AnimatePresence>
 
         <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
-          <Stat label="Leave at" value={plan.facts.departClock} sub={origin.label} tone="red" />
           <Stat
-            label="In your seat"
-            value={plan.facts.seatedClock}
-            sub={`kick-off ${plan.facts.kickoffClock}`}
+            label={tj_.leaveAt}
+            value={plan.facts.departClock}
+            sub={placeLabel(origin.label, locale)}
             tone="red"
           />
           <Stat
-            label="Door to seat"
-            value={formatDuration(c.doorToSeatMinutes)}
-            sub={c.modeLabel}
+            label={tj_.inSeat}
+            value={plan.facts.seatedClock}
+            sub={tj_.kickoff(plan.facts.kickoffClock)}
+            tone="red"
           />
           <Stat
-            label="Home by"
+            label={tj_.doorToSeat}
+            value={shortDuration(c.doorToSeatMinutes)}
+            sub={chosenMode}
+          />
+          <Stat
+            label={tj_.homeBy}
             value={rec.homeClock}
-            sub={rec.stayMinutes ? `after a ${rec.stayMinutes}-min stay` : 'leaving at the whistle'}
-            tone="violet"
+            sub={rec.stayMinutes ? tj_.afterStay(rec.stayMinutes) : tj_.atWhistle}
+            tone="blue"
           />
           <Stat
-            label="Green points"
+            label={tj_.green}
             value={`+${plan.green.points}`}
-            sub={
-              plan.green.co2SavedKg > 0 ? `${plan.green.co2SavedKg} kg CO₂ saved` : 'no CO₂ saving'
-            }
-            tone="teal"
+            sub={plan.green.co2SavedKg > 0 ? tj_.co2(f.dec(plan.green.co2SavedKg, 1)) : tj_.noCo2}
+            tone="green"
             className="col-span-2 md:col-span-1"
           />
         </div>
 
         <Panel
-          title="Your matchday, in a sentence or five"
+          title={
+            <span className="inline-flex items-center gap-2">
+              <Sparkles className="size-4 text-bad" aria-hidden /> {tj_.narrationTitle}
+            </span>
+          }
           actions={
-            <div className="flex items-center gap-2">
-              {!narrating && narration?.data && (
-                <AiBadge
-                  source={narration.data.source}
-                  model={narration.data.model}
-                  latencyMs={narration.data.latencyMs}
-                  note={narration.data.note}
-                />
-              )}
-              <Segmented<'en' | 'de'>
-                label="Language"
-                size="sm"
-                value={language}
-                onChange={setLanguage}
-                options={[
-                  { value: 'en', label: 'EN' },
-                  { value: 'de', label: 'DE' },
-                ]}
+            !narrating &&
+            narration?.data && (
+              <AiBadge
+                source={narration.data.source}
+                model={narration.data.model}
+                latencyMs={narration.data.latencyMs}
+                note={narration.data.note}
               />
-            </div>
+            )
           }
         >
           <div aria-live="polite" className="min-h-16 text-[15px] leading-relaxed text-fg-2">
-            {narrating ? (
-              <div className="space-y-2" aria-busy="true">
+            {narrating && !narration?.data ? (
+              <div className="space-y-2.5" aria-busy="true">
                 <div className="skeleton h-3 w-full rounded" />
                 <div className="skeleton h-3 w-11/12 rounded" />
                 <div className="skeleton h-3 w-2/3 rounded" />
@@ -571,59 +592,66 @@ export function JourneyApp() {
                 {narration.error}
               </p>
             ) : (
-              <p>{narration?.data?.value}</p>
+              // Old text stays while the new one loads, softened — no layout jump.
+              <p
+                className={cn(
+                  'text-pretty transition-[opacity,filter] duration-200',
+                  narrating && 'opacity-50 blur-[1.5px]',
+                )}
+                aria-busy={narrating}
+              >
+                {narration?.data?.value}
+              </p>
             )}
           </div>
-          <div className="mt-4 flex flex-wrap gap-2">
+          <div className="mt-5 flex flex-wrap gap-2">
             <a
               href={plan.googleMapsUrl}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex h-9 items-center gap-2 rounded-xl border border-line-strong bg-ink-700 px-3 text-sm font-semibold text-fg hover:bg-ink-600"
+              className="press inline-flex h-9 items-center gap-2 rounded-xl bg-fg px-3.5 text-sm font-semibold text-inverse hover:opacity-90"
             >
-              <ExternalLink className="size-4" aria-hidden /> Open route in Google Maps
+              <ExternalLink className="size-4" aria-hidden /> {tj_.maps}
             </a>
             {plan.green.breakdown.map((b) => (
-              <Badge key={b} tone="teal">
-                <Leaf className="size-3" aria-hidden /> {b}
+              <Badge key={b} tone="green">
+                <Leaf className="size-3" aria-hidden /> {L(b)}
               </Badge>
             ))}
           </div>
         </Panel>
 
         <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-          <Panel
-            title="Sofa to seat — and back"
-            subtitle={`${c.modeLabel} · ${plan.entrance.label}`}
-          >
+          <Panel title={tj_.timelineTitle} subtitle={`${chosenMode} · ${plan.entrance.label}`}>
             <Timeline steps={plan.timeline} />
           </Panel>
 
           <div className="flex min-w-0 flex-col gap-6">
-            <Panel title="After the whistle" subtitle="Queue at the station vs. when you’d be home">
-              <ul className="space-y-3">
+            <Panel title={tj_.afterTitle} subtitle={tj_.afterSub}>
+              <ul className="space-y-2.5">
                 {plan.postMatch.map((o) => (
                   <li
                     key={o.stayMinutes}
                     className={cn(
-                      'rounded-xl border p-3',
-                      o.recommended
-                        ? 'border-viz-teal/60 bg-viz-teal/10'
-                        : 'hairline bg-ink-800/50',
+                      'rounded-xl p-3 transition-colors duration-200',
+                      o.recommended ? 'bg-fcb/[0.05] ring-1 ring-fcb/30 ring-inset' : 'bg-ink-800',
                     )}
                   >
                     <div className="flex items-center justify-between gap-3 text-sm">
-                      <span className="font-medium text-fg">{o.label}</span>
-                      {o.recommended && <Badge tone="teal">Recommended</Badge>}
+                      <span className="font-medium text-fg">{L(o.label)}</span>
+                      {o.recommended && <Badge tone="red">{tj_.recommended}</Badge>}
                     </div>
                     <div className="mt-2 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
-                      <span
-                        className="h-2 rounded-full bg-viz-red"
-                        style={{ width: `${Math.max(3, (o.queueMinutes / maxQueue) * 100)}%` }}
-                        aria-hidden
-                      />
+                      <span className="h-2 overflow-hidden rounded-full bg-ink-700" aria-hidden>
+                        <span
+                          className="block h-full origin-left rounded-full bg-fcb transition-transform duration-500 ease-[var(--ease-out)]"
+                          style={{
+                            transform: `scaleX(${Math.max(0.03, o.queueMinutes / maxQueue).toFixed(4)})`,
+                          }}
+                        />
+                      </span>
                       <span className="tabular text-xs text-fg-2">
-                        {fmtMinutes(o.queueMinutes)} queue · home {o.homeClock}
+                        {tj_.queueHome(f.minutes(o.queueMinutes), o.homeClock)}
                       </span>
                     </div>
                   </li>
@@ -632,16 +660,13 @@ export function JourneyApp() {
             </Panel>
 
             {usesU6 && (
-              <Panel
-                title="U6 to Fröttmaning — how full?"
-                subtitle="Load vs. capacity on matchday; dot = your train"
-              >
+              <Panel title={tj_.u6Title} subtitle={tj_.u6Sub}>
                 <LineChart
-                  title="Inbound U6 load before kick-off"
+                  title={tj_.u6Aria}
                   series={[
                     {
                       key: 'load',
-                      label: 'U6 load',
+                      label: tj_.u6Load,
                       color: 'var(--color-u6)',
                       area: true,
                       points: plan.inboundCurve
@@ -653,9 +678,9 @@ export function JourneyApp() {
                   formatX={(x) => clockAt(fixture.kickoff, x)}
                   formatY={(y) => `${Math.round(y * 100)}%`}
                   yMax={1.4}
-                  band={{ from: 1, to: 1.4, label: 'over capacity' }}
+                  band={{ from: 1, to: 1.4, label: tj_.overCapacity }}
                   markers={[
-                    { x: c.esplanadeAt - afterU6, label: 'Your train', color: 'var(--color-fg)' },
+                    { x: c.esplanadeAt - afterU6, label: tj_.yourTrain, color: 'var(--color-fg)' },
                   ]}
                   height={220}
                 />
@@ -663,21 +688,27 @@ export function JourneyApp() {
             )}
 
             {plan.alternatives.length > 0 && (
-              <Panel title="Plan B">
-                <ul className="divide-y divide-line text-sm">
+              <Panel title={tj_.planB}>
+                <ul className="text-sm">
                   {plan.alternatives.map((a) => {
                     const Icon = MODE_ICON[a.mode];
                     return (
-                      <li key={a.mode} className="flex items-center justify-between gap-3 py-2.5">
-                        <span className="inline-flex items-center gap-2 text-fg-2">
-                          <Icon className="size-4 text-fg-3" aria-hidden /> {a.modeLabel}
+                      <li
+                        key={a.mode}
+                        className="flex items-center justify-between gap-3 border-t hairline py-2.5 first:border-t-0 first:pt-0"
+                      >
+                        <span className="inline-flex items-center gap-2 font-medium text-fg">
+                          <Icon className="size-4 text-fg-3" aria-hidden />{' '}
+                          {modeLabel(a.mode, a.modeLabel, locale)}
                         </span>
-                        <span className="tabular text-xs text-fg-3">
-                          leave {clockAt(fixture.kickoff, a.departAt)} ·{' '}
-                          {formatDuration(a.doorToSeatMinutes)} door to seat
+                        <span className="tabular min-w-0 flex-1 text-right text-xs text-fg-3">
+                          {tj_.leave(
+                            clockAt(fixture.kickoff, a.departAt),
+                            formatDuration(a.doorToSeatMinutes),
+                          )}
                         </span>
-                        <Button size="sm" variant="ghost" onClick={() => setMode(a.mode)}>
-                          Use
+                        <Button size="sm" variant="secondary" onClick={() => setMode(a.mode)}>
+                          {tj_.use}
                         </Button>
                       </li>
                     );
@@ -691,48 +722,56 @@ export function JourneyApp() {
         <Panel
           title={
             <span className="inline-flex items-center gap-2">
-              <MessageCircle className="size-4 text-bad" aria-hidden /> Ask about your plan
+              <MessageCircle className="size-4 text-bad" aria-hidden /> {tj_.askTitle}
             </span>
           }
-          subtitle="Answers come only from your plan — no invented times."
+          subtitle={tj_.askSub}
         >
           <ul className="space-y-3" aria-live="polite">
-            {qa.map((x) => (
-              <li key={x.id} className="space-y-1.5">
-                <p className="ml-auto w-fit max-w-[85%] rounded-2xl rounded-br-md bg-fcb px-3 py-2 text-sm text-white">
-                  {x.q}
-                </p>
-                {x.a ? (
-                  <div className="max-w-[85%]">
-                    <p className="rounded-2xl rounded-bl-md bg-ink-700 px-3 py-2 text-sm text-fg">
-                      {x.a.value}
-                    </p>
-                    <AiBadge source={x.a.source} className="mt-1 scale-90" />
-                  </div>
-                ) : x.error ? (
-                  <p role="alert" className="text-sm text-bad">
-                    {x.error}
+            <AnimatePresence initial={false}>
+              {qa.map((x) => (
+                <motion.li
+                  key={x.id}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.28, ease: EASE_OUT }}
+                  className="space-y-1.5"
+                >
+                  <p className="ml-auto w-fit max-w-[85%] rounded-[20px] rounded-br-md bg-fcb px-3.5 py-2 text-sm text-white">
+                    {x.q}
                   </p>
-                ) : (
-                  <div className="w-fit rounded-2xl rounded-bl-md bg-ink-700 px-3 py-2.5">
-                    <TypingDots />
-                  </div>
-                )}
-              </li>
-            ))}
+                  {x.a ? (
+                    <motion.div
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.28, ease: EASE_OUT }}
+                      className="max-w-[85%]"
+                    >
+                      <p className="rounded-[20px] rounded-bl-md bg-ink-750 px-3.5 py-2 text-sm text-fg">
+                        {x.a.value}
+                      </p>
+                      <AiBadge source={x.a.source} className="mt-1 origin-left scale-90" />
+                    </motion.div>
+                  ) : x.error ? (
+                    <p role="alert" className="text-sm text-bad">
+                      {x.error}
+                    </p>
+                  ) : (
+                    <div className="w-fit rounded-[20px] rounded-bl-md bg-ink-750 px-3.5 py-3">
+                      <TypingDots />
+                    </div>
+                  )}
+                </motion.li>
+              ))}
+            </AnimatePresence>
           </ul>
-          <div className="mt-3 flex flex-wrap gap-1.5">
-            {[
-              'Where are the shortest toilet queues?',
-              'How do I get home fastest?',
-              'Will the U6 be packed?',
-              'Which entrance do I use?',
-            ].map((q) => (
+          <div className={cn('flex flex-wrap gap-1.5', qa.length > 0 && 'mt-4')}>
+            {tj_.questions.map((q) => (
               <button
                 key={q}
                 type="button"
                 onClick={() => void ask(q)}
-                className="rounded-full border border-line-strong px-2.5 py-1 text-xs text-fg-3 hover:border-fg-3 hover:text-fg-2"
+                className="press rounded-full bg-ink-800 px-3 py-1.5 text-xs text-fg-2 hover:bg-ink-750 hover:text-fg"
               >
                 {q}
               </button>
@@ -746,17 +785,18 @@ export function JourneyApp() {
             }}
           >
             <label htmlFor="journey-q" className="sr-only">
-              Ask a question about your plan
+              {tj_.askLabel}
             </label>
             <input
               id="journey-q"
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
               maxLength={300}
-              placeholder="Ask anything about your matchday…"
-              className="h-10 min-w-0 flex-1 rounded-xl border border-line-strong bg-ink-900 px-3 text-sm text-fg placeholder:text-fg-3"
+              enterKeyHint="send"
+              placeholder={tj_.askPlaceholder}
+              className={cn(inputClass, 'min-w-0 flex-1')}
             />
-            <Button type="submit" aria-label="Ask" disabled={!question.trim()}>
+            <Button type="submit" aria-label={tj_.ask} disabled={!question.trim()}>
               <Send className="size-4" aria-hidden />
             </Button>
           </form>

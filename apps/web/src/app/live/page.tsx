@@ -1,12 +1,13 @@
+import { Radio } from 'lucide-react';
 import type { Metadata } from 'next';
 import { StageDemo } from '@/components/live/StageDemo';
 import { PageHeader } from '@/components/ui/primitives';
+import { getMessages } from '@/lib/i18n/server';
 
-export const metadata: Metadata = {
-  title: 'Stage demo — two phones, one seat',
-  description:
-    'Sepp releases his Südkurve spot in a Gemini chat; Mia from the waitlist gets it seconds later.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getMessages();
+  return { title: t.live.metaTitle, description: t.live.metaDescription };
+}
 
 export const dynamic = 'force-dynamic';
 
@@ -15,14 +16,15 @@ export default async function LivePage({
 }: {
   searchParams: Promise<{ room?: string }>;
 }) {
-  const { room } = await searchParams;
+  const [{ room }, { t }] = await Promise.all([searchParams, getMessages()]);
   const roomId = room && /^[a-z0-9-]{1,24}$/.test(room) ? room : 'stage';
   return (
     <>
       <PageHeader
-        eyebrow="Kein Platz bleibt leer · live"
-        title="Two phones. One seat. Zero empty."
-        lead="Friday afternoon, 26 hours before kick-off. Sepp’s calendar says Hamburg. Gemini asks him kindly — he taps once, and the engine hands his Südkurve spot to the next fan who fits: Mia from Garching, nine “no”s in a row. Open the phone links on two real devices for the stage."
+        icon={<Radio className="size-3.5" aria-hidden />}
+        eyebrow={t.live.eyebrow}
+        title={t.live.title}
+        lead={t.live.lead}
       />
       <StageDemo room={roomId} />
     </>

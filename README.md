@@ -1,6 +1,6 @@
-# Fan AI Lab — FCB Fair Seat + Matchday Journey Agent
+# Kickoff — fair tickets, full stands, easy matchdays
 
-**Three working, Gemini-powered prototypes for the [FC Bayern Fan AI-DEATION](https://fcbayern.com/en/fans/ai-deation)**
+**Kickoff** is three working, Gemini-powered prototypes for the [FC Bayern Fan AI-DEATION](https://fcbayern.com/en/fans/ai-deation)\*\*
 — the top three ideas from our research, shipped as one product family:
 
 |     | Product                                        | What it does                                                                                                                                                                                                                                 |
@@ -11,7 +11,9 @@
 
 > Independent hackathon prototype. Not an official FC Bayern product. All members, tickets, demand and travel figures are **synthetic and illustrative**.
 
-![Hub](docs/screenshots/01-hub.jpg)
+![Kickoff hub — live Arena simulation](docs/screenshots/01-hub.jpg)
+
+Bayern red, white and blue · light and dark themes · **English and Deutsch** (switch in the header) · built for phones first.
 
 ## Why it matters (the numbers on screen are computed live by the engines)
 
@@ -39,11 +41,36 @@ Fan app (Next.js) ──► API routes (zod, rate limits, server-side facts)
 
 Gemini can **suggest** releasing a seat; only the fan’s **tap** executes it. Ballot seeds are committed (SHA-256) before the draw and revealed after; any member can re-verify their own entry in the browser.
 
-| Ballot (commit → draw → verify → letter)       | Seat recycling control room                     |
-| ---------------------------------------------- | ----------------------------------------------- |
-| ![Ballot](docs/screenshots/02-ballot-draw.jpg) | ![Recycling](docs/screenshots/03-recycling.jpg) |
-| **Two-phone stage demo**                       | **Matchday journey agent**                      |
-| ![Live](docs/screenshots/04-live-offer.jpg)    | ![Journey](docs/screenshots/05-journey.jpg)     |
+| Ballot (commit → draw → verify → letter)       | Seat recycling control room                           |
+| ---------------------------------------------- | ----------------------------------------------------- |
+| ![Ballot](docs/screenshots/02-ballot-draw.jpg) | ![Recycling](docs/screenshots/03-recycling.jpg)       |
+| **Two-phone stage demo**                       | **Matchday journey agent (Deutsch, dark)**            |
+| ![Live](docs/screenshots/04-live-offer.jpg)    | ![Journey](docs/screenshots/05-journey.jpg)           |
+| **Hub in Deutsch, dark theme**                 | **How it works**                                      |
+| ![Hub DE](docs/screenshots/08-hub-dark-de.jpg) | ![Architecture](docs/screenshots/06-architecture.jpg) |
+
+![Phones: hub, ballot in Deutsch, waitlist fan view](docs/screenshots/07-mobile.jpg)
+
+## Design & UX
+
+The interface is design-engineered with [Emil Kowalski’s skills](https://github.com/emilkowalski/skills)
+(installed under `.claude/skills`, pinned in `skills-lock.json`); the rules we follow are written down in
+[`DESIGN.md`](DESIGN.md).
+
+- **Bayern palette, two themes.** Red `#DC052D` leads, Bayern blue `#0066B2` supports, white carries the
+  light theme and a deep navy the dark one. Every surface is a semantic token, so one set of utilities
+  renders both themes (`next-themes`, no flash on load); chart ramps and the Arena map retheme too.
+- **English / Deutsch.** Typed dictionaries (the compiler enforces identical shapes), cookie +
+  `Accept-Language` detection, localised numbers and dates. Engine output is rebuilt in German from its
+  structured facts, and facts are localised _before_ they reach Gemini — replies never mix languages.
+- **Motion with a purpose.** Custom ease-out curves, press feedback on every control, digits that roll
+  (NumberFlow) instead of jumping, clip-path segmented controls whose pill and label move as one, charts
+  that draw once, spring-in tickets and push offers. Nothing animates on keyboard actions, nothing loops
+  off-screen, and `prefers-reduced-motion` keeps fades while dropping movement.
+- **Feels native on a phone.** No tap flash, 16 px inputs (no iOS zoom), safe-area insets, per-scheme
+  `theme-color`, `touch-action: manipulation`, and the stage-demo phones go full-bleed on real devices.
+- **Accessible.** axe WCAG 2 A/AA clean on every page in both projects; real radio groups, switches and
+  labels; visible focus rings; screen-reader text for every chart.
 
 ## Quick start
 
@@ -79,7 +106,7 @@ pnpm e2e                      # Playwright user scenarios, desktop + Pixel 7, ax
 | `packages/core` — 73 tests, ~99% line coverage | SHA-256 vs NIST/`node:crypto`, odds estimator calibrated against thousands of seeded draws, property tests (seats never exceeded, groups never split, outcome independent of list order, engine invariants + deterministic replay), no-show model monotonicity, journey always seats the fan on time |
 | `packages/ai` — 36 tests                       | Fake Gemini SDK, timeouts, invalid JSON / schema failures, numbers guard, injection hygiene, EN/DE intents, every template passes its own grounding check                                                                                                                                            |
 | `apps/web` — 13 API tests                      | Rate limiting, body caps, error mapping, stateless commit–reveal, live-room choreography, route validation                                                                                                                                                                                           |
-| `apps/web/e2e` — 40 scenarios                  | Every page: no console errors, axe (no serious/critical), no horizontal overflow; ballot, recycling, three-device live release/pass/accept, journey free text → strike re-plan → Q&A                                                                                                                 |
+| `apps/web/e2e` — 44 scenarios                  | Every page: no console errors, axe (no serious/critical), no horizontal overflow at device width; ballot, recycling, three-device live release/pass/accept, journey free text → strike re-plan → Q&A, EN→DE switch, theme toggle                                                                     |
 
 CI runs all of it on every push (`.github/workflows/ci.yml`).
 
@@ -88,7 +115,7 @@ CI runs all of it on every push (`.github/workflows/ci.yml`).
 ```
 packages/core     domain engines (ticketing · seats · journey · shared PRNG/SHA-256)
 packages/ai       Gemini client, config, guards, numbers guard, skills (letter · seat chat · journey)
-apps/web          Next.js 16 app: pages, API routes, live rooms (SSE), design system, e2e tests
+apps/web          Next.js 16 app: pages, API routes, live rooms (SSE), design system, i18n (EN/DE), e2e tests
 docs/             pitch script, submission answers, screenshots
 ```
 
@@ -103,7 +130,7 @@ Key design decisions:
 ## Deploy
 
 - **Vercel / any Node host:** `pnpm build && pnpm start` (set `GEMINI_API_KEY`, `DRAW_SECRET`).
-- **Google Cloud Run:** `docker build -t fan-ai-lab . && docker run -p 8080:8080 fan-ai-lab` — use `--max-instances=1` for stage demos (in-memory live rooms).
+- **Google Cloud Run:** `docker build -t kickoff . && docker run -p 8080:8080 kickoff` — use `--max-instances=1` for stage demos (in-memory live rooms).
 
 ## Pitch kit
 

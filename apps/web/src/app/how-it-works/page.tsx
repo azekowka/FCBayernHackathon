@@ -1,20 +1,29 @@
-import { Ban, Calculator, Eye, Fingerprint, Lock, ShieldCheck, Users, Wifi } from 'lucide-react';
+import {
+  Ban,
+  Calculator,
+  Cpu,
+  Eye,
+  Fingerprint,
+  Lock,
+  ShieldCheck,
+  Users,
+  Wifi,
+} from 'lucide-react';
 import type { Metadata } from 'next';
 import { Eyebrow, PageHeader, Panel } from '@/components/ui/primitives';
+import { getMessages } from '@/lib/i18n/server';
 import { aiStatus } from '@/lib/server/ai';
 
-export const metadata: Metadata = {
-  title: 'How it works',
-  description:
-    'Architecture, grounding loop, privacy and pilot plan behind the Fan AI Lab prototypes.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getMessages();
+  return { title: t.how.metaTitle, description: t.how.metaDescription };
+}
 
 function Box({
   x,
   y,
   w,
   h,
-  title,
   lines,
   accent,
 }: {
@@ -22,19 +31,27 @@ function Box({
   y: number;
   w: number;
   h: number;
-  title: string;
   lines: string[];
   accent: string;
 }) {
+  const [title, ...rest] = lines;
   return (
     <g>
-      <rect x={x} y={y} width={w} height={h} rx={14} fill="#111827" stroke="#34405a" />
-      <rect x={x} y={y + 14} width={3} height={h - 28} rx={1.5} fill={accent} />
-      <text x={x + 16} y={y + 26} className="fill-fg text-[13px] font-semibold">
+      <rect
+        x={x}
+        y={y}
+        width={w}
+        height={h}
+        rx={16}
+        fill="var(--color-ink-850)"
+        stroke="var(--color-line-strong)"
+      />
+      <rect x={x} y={y + 16} width={3} height={h - 32} rx={1.5} fill={accent} />
+      <text x={x + 18} y={y + 28} className="fill-fg text-[13px] font-semibold">
         {title}
       </text>
-      {lines.map((l, i) => (
-        <text key={l} x={x + 16} y={y + 46 + i * 17} className="fill-fg-3 text-[11px]">
+      {rest.map((l, i) => (
+        <text key={l} x={x + 18} y={y + 49 + i * 18} className="fill-fg-3 text-[11px]">
           {l}
         </text>
       ))}
@@ -64,16 +81,27 @@ function Arrow({
         y1={y1}
         x2={x2}
         y2={y2}
-        stroke="#8590a6"
+        stroke="var(--color-fg-3)"
         strokeWidth={1.5}
         markerEnd="url(#arrow)"
+      />
+      {/* Data in motion: dashes travel along the arrow — constant motion, so linear. */}
+      <line
+        x1={x1}
+        y1={y1}
+        x2={x2 - Math.sign(x2 - x1) * 6}
+        y2={y2 - Math.sign(y2 - y1) * 6}
+        stroke="var(--color-fcb)"
+        strokeWidth={2}
+        strokeLinecap="round"
+        className="flow-dash"
       />
       {label && (
         <text
           x={(x1 + x2) / 2}
           y={(y1 + y2) / 2 + dy}
           textAnchor="middle"
-          className="fill-fg-2 text-[11px]"
+          className="fill-fg-2 text-[11px] font-medium"
         >
           {label}
         </text>
@@ -82,38 +110,34 @@ function Arrow({
   );
 }
 
-export default function HowItWorksPage() {
+const FAN_ICONS = [Ban, Fingerprint, Lock, ShieldCheck, Users, Eye];
+
+export default async function HowItWorksPage() {
+  const { t } = await getMessages();
+  const h = t.how;
   const ai = aiStatus();
   return (
     <>
       <PageHeader
-        eyebrow="Architecture & responsible AI"
-        title="Engines decide. Gemini explains."
-        lead="Every number a fan sees — odds, draw positions, seats, queue minutes — comes from deterministic, unit-tested engines. Gemini only turns those facts into conversation, in the fan’s language. If it ever writes a number the engines didn’t produce, we throw the sentence away."
+        icon={<Cpu className="size-3.5" aria-hidden />}
+        eyebrow={h.eyebrow}
+        title={h.title}
+        lead={h.lead}
       />
 
       <Panel
-        title="System at a glance"
-        subtitle={`Currently running: ${ai.mode === 'gemini' ? `Gemini (${ai.model})` : 'offline demo templates — set GEMINI_API_KEY for live Gemini'}`}
+        title={h.systemTitle}
+        subtitle={h.running(ai.mode === 'gemini' ? `Gemini (${ai.model})` : h.runningDemo)}
       >
-        <div
-          className="overflow-x-auto"
-          tabIndex={0}
-          role="region"
-          aria-label="Architecture diagram (scrollable)"
-        >
+        <div className="overflow-x-auto" tabIndex={0} role="region" aria-label={h.diagramRegion}>
           <svg
             viewBox="0 0 980 360"
             className="h-auto w-full min-w-[760px]"
             role="img"
             aria-labelledby="arch-title arch-desc"
           >
-            <title id="arch-title">Architecture diagram</title>
-            <desc id="arch-desc">
-              The fan app calls typed API routes. Routes ask the deterministic core engines for
-              facts, then the AI layer turns the facts into text with Gemini, checks every number,
-              and falls back to templates when needed.
-            </desc>
+            <title id="arch-title">{h.diagramTitle}</title>
+            <desc id="arch-desc">{h.diagramDesc}</desc>
             <defs>
               <marker
                 id="arrow"
@@ -124,195 +148,97 @@ export default function HowItWorksPage() {
                 markerHeight="7"
                 orient="auto-start-reverse"
               >
-                <path d="M0,0 L10,5 L0,10 z" fill="#8590a6" />
+                <path d="M0,0 L10,5 L0,10 z" fill="var(--color-fg-3)" />
               </marker>
             </defs>
-            <Box
-              x={10}
-              y={120}
-              w={190}
-              h={120}
-              title="Fan app (Next.js)"
-              lines={[
-                'Ballot · Recycling · Journey',
-                'Two-phone live room (SSE)',
-                'Source badge on every AI text',
-              ]}
-              accent="#dc052d"
-            />
-            <Box
-              x={270}
-              y={120}
-              w={200}
-              h={120}
-              title="API routes"
-              lines={[
-                'zod-validated inputs',
-                'rate limits, body caps',
-                'facts recomputed server-side',
-                'commit–reveal draw secret',
-              ]}
-              accent="#8a7cf0"
-            />
-            <Box
-              x={540}
-              y={20}
-              w={200}
-              h={130}
-              title="@fcb/core engines"
-              lines={[
-                'weighted verifiable draw',
-                'no-show model + matching',
-                'U6 crowd model + planner',
-                '73 tests · 99% coverage',
-              ]}
-              accent="#12a08e"
-            />
-            <Box
-              x={540}
-              y={210}
-              w={200}
-              h={130}
-              title="@fcb/ai layer"
-              lines={[
-                'prompts + JSON schemas',
-                'numbers guard',
-                'injection hygiene',
-                'EN/DE grounded fallback',
-              ]}
-              accent="#3d8fe0"
-            />
+            <Box x={10} y={120} w={190} h={120} lines={h.boxes.app} accent="#dc052d" />
+            <Box x={270} y={120} w={200} h={130} lines={h.boxes.api} accent="var(--color-fg-3)" />
+            <Box x={540} y={20} w={200} h={130} lines={h.boxes.core} accent="var(--color-ok)" />
+            <Box x={540} y={210} w={200} h={130} lines={h.boxes.ai} accent="var(--color-blue)" />
             <Box
               x={800}
               y={210}
               w={170}
               h={130}
-              title="Google Gemini"
-              lines={[ai.model, 'structured output', 'any language', 'timeouts → fallback']}
-              accent="#3d8fe0"
+              lines={[h.boxes.gemini[0] ?? 'Gemini', ai.model, ...h.boxes.gemini.slice(1)]}
+              accent="var(--color-blue)"
             />
-            <Arrow x1={200} y1={180} x2={268} y2={180} label="JSON" />
-            <Arrow x1={470} y1={160} x2={538} y2={100} label="inputs" dy={-10} />
-            <Arrow x1={640} y1={150} x2={640} y2={208} label="facts" dy={4} />
-            <Arrow x1={740} y1={262} x2={798} y2={262} label="prompt" />
-            <Arrow x1={798} y1={300} x2={740} y2={300} label="text" dy={16} />
-            <Arrow x1={538} y1={275} x2={472} y2={215} label="verified text" dy={20} />
+            <Arrow x1={200} y1={180} x2={268} y2={180} label={h.arrows.json} />
+            <Arrow x1={470} y1={160} x2={538} y2={100} label={h.arrows.inputs} dy={-10} />
+            <Arrow x1={640} y1={150} x2={640} y2={208} label={h.arrows.facts} dy={4} />
+            <Arrow x1={740} y1={262} x2={798} y2={262} label={h.arrows.prompt} />
+            <Arrow x1={798} y1={300} x2={740} y2={300} label={h.arrows.text} dy={16} />
+            <Arrow x1={538} y1={275} x2={472} y2={215} label={h.arrows.verified} dy={20} />
           </svg>
         </div>
-        <p className="mt-3 text-sm text-fg-3">
-          Read left to right: the app never talks to Gemini directly, and Gemini never sees anything
-          the engines didn’t compute. The engines run identically in the browser, on the server and
-          in tests.
-        </p>
+        <p className="mt-4 text-sm text-pretty text-fg-3">{h.diagramNote}</p>
       </Panel>
 
-      <section className="mt-10" aria-labelledby="loop-title">
-        <Eyebrow>The grounding loop</Eyebrow>
-        <h2 id="loop-title" className="display mt-2 text-3xl font-bold">
-          Five steps behind every sentence
+      <section className="mt-16" aria-labelledby="loop-title">
+        <Eyebrow className="text-bad">{h.loopEyebrow}</Eyebrow>
+        <h2 id="loop-title" className="display mt-3 text-4xl">
+          {h.loopTitle}
         </h2>
-        <ol className="mt-5 grid gap-3 md:grid-cols-5">
-          {[
-            [
-              'Compute',
-              'An engine produces structured facts — odds, draw position, queue minutes.',
-            ],
-            [
-              'Phrase',
-              'Gemini writes from those facts only, in the fan’s language, with a strict system prompt.',
-            ],
-            [
-              'Verify',
-              'Every multi-digit number in the reply must exist in the facts — or the reply is discarded.',
-            ],
-            [
-              'Fall back',
-              'Timeouts, invalid JSON or invented numbers switch to a grounded template instantly.',
-            ],
-            [
-              'Disclose',
-              'A badge tells the fan which path wrote the text: Gemini, demo, or safe fallback.',
-            ],
-          ].map(([t, d], i) => (
-            <li key={t} className="card p-4">
-              <p className="display tabular text-3xl font-bold text-bad">{i + 1}</p>
-              <p className="mt-1 font-semibold text-fg">{t}</p>
-              <p className="mt-1 text-sm text-fg-3">{d}</p>
+        <ol className="mt-8 grid gap-3 md:grid-cols-5">
+          {h.loop.map(([title, d], i) => (
+            <li key={title} className="card relative p-5">
+              <span className="display tabular flex size-9 items-center justify-center rounded-xl bg-fcb text-base text-white">
+                {i + 1}
+              </span>
+              <p className="mt-4 font-semibold text-fg">{title}</p>
+              <p className="mt-1 text-sm text-pretty text-fg-3">{d}</p>
             </li>
           ))}
         </ol>
       </section>
 
-      <section className="mt-10 grid gap-6 lg:grid-cols-2">
-        <Panel title="Fan-first by design">
-          <ul className="grid gap-3 text-sm text-fg-2">
-            {[
-              {
-                icon: Ban,
-                t: 'No dynamic pricing — capacity is dynamic, prices are not. Recycled seats move at face value without fees.',
-              },
-              {
-                icon: Fingerprint,
-                t: 'Verifiable draws — SHA-256 commitment before the ballot closes; any member can recompute their own race time.',
-              },
-              {
-                icon: Lock,
-                t: 'Privacy — opt-in signals only (calendar, attendance), no biometrics, no location tracking; the no-show estimate is built to run on-device.',
-              },
-              {
-                icon: ShieldCheck,
-                t: 'Human in the loop — Gemini can only suggest; releasing a seat needs the fan’s tap.',
-              },
-              {
-                icon: Users,
-                t: 'Inclusion — groups never split, accessible spaces prioritised, step-free routing, youth fan-club gifting.',
-              },
-              {
-                icon: Eye,
-                t: 'Transparency — published loyalty rules, offer windows and per-Pechvogel win rates after every draw.',
-              },
-            ].map(({ icon: Icon, t }) => (
-              <li key={t} className="flex gap-3">
-                <Icon className="mt-0.5 size-4 shrink-0 text-bad" aria-hidden />
-                {t}
-              </li>
-            ))}
+      <section className="mt-16 grid gap-6 lg:grid-cols-2">
+        <Panel title={h.fanFirst}>
+          <ul className="grid gap-3.5 text-sm text-fg-2">
+            {h.fanFirstList.map((line, i) => {
+              const Icon = FAN_ICONS[i] ?? ShieldCheck;
+              return (
+                <li key={line} className="flex gap-3">
+                  <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-fcb/10">
+                    <Icon className="size-3.5 text-bad" aria-hidden />
+                  </span>
+                  <span className="pt-0.5 text-pretty">{line}</span>
+                </li>
+              );
+            })}
           </ul>
         </Panel>
-        <Panel title="From prototype to pilot">
-          <ol className="grid gap-4 text-sm">
-            {[
-              [
-                'Now',
-                'Working prototype: three products, full-size draws, live two-phone demo, offline-safe AI.',
-              ],
-              [
-                'Pilot · 1 match',
-                'One low-demand home match, 500 opt-in season-ticket holders. Measure release rate, refill rate, minutes to refill and fan satisfaction against the Ticket Exchange.',
-              ],
-              [
-                'Ballot phase',
-                'Publish odds and per-Pechvogel win rates for one ballot phase; co-design rules with the Fan Dialogue working group.',
-              ],
-              [
-                'Matchday',
-                'Swap the schematic network for Google Maps Routes and MVG live data through the same interfaces; run on Vertex AI / Cloud Run.',
-              ],
-            ].map(([t, d]) => (
-              <li key={t} className="grid grid-cols-[110px_1fr] gap-3">
-                <span className="font-semibold text-fg">{t}</span>
-                <span className="text-fg-2">{d}</span>
+        <Panel title={h.pilotTitle}>
+          <ol className="relative grid gap-5 text-sm">
+            {h.pilot.map(([title, d], i) => (
+              <li key={title} className="grid grid-cols-[20px_1fr] gap-3">
+                <span className="relative flex justify-center" aria-hidden>
+                  {i < h.pilot.length - 1 && (
+                    <span className="absolute top-4 -bottom-5 w-0.5 rounded-full bg-line-strong" />
+                  )}
+                  <span
+                    className={
+                      i === 0
+                        ? 'relative mt-1 size-3 rounded-full bg-fcb ring-4 ring-fcb/15'
+                        : 'relative mt-1 size-3 rounded-full bg-ink-600 ring-4 ring-ink-850'
+                    }
+                  />
+                </span>
+                <span>
+                  <span className="block font-semibold text-fg">{title}</span>
+                  <span className="mt-0.5 block text-pretty text-fg-2">{d}</span>
+                </span>
               </li>
             ))}
           </ol>
-          <p className="mt-4 flex items-center gap-2 text-xs text-fg-3">
-            <Wifi className="size-3.5" aria-hidden /> Works offline in demo mode — the stage never
-            depends on venue Wi-Fi.
-          </p>
-          <p className="mt-1 flex items-center gap-2 text-xs text-fg-3">
-            <Calculator className="size-3.5" aria-hidden /> All figures are illustrative model
-            outputs on synthetic data, not FC Bayern data.
-          </p>
+          <div className="mt-6 space-y-1.5 border-t hairline pt-4 text-xs text-fg-3">
+            <p className="flex items-center gap-2">
+              <Wifi className="size-3.5 shrink-0" aria-hidden /> {h.offline}
+            </p>
+            <p className="flex items-center gap-2">
+              <Calculator className="size-3.5 shrink-0" aria-hidden /> {h.synthetic}
+            </p>
+          </div>
         </Panel>
       </section>
     </>

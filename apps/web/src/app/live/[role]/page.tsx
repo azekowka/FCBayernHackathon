@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { SinglePhone } from '@/components/live/StageDemo';
 
-export const metadata: Metadata = { title: 'Phone view — stage demo' };
+export const metadata: Metadata = { title: 'Phone · Kickoff live' };
 export const dynamic = 'force-dynamic';
 
 const ROLES = new Set(['sepp', 'mia', 'jonas', 'kofi', 'elif', 'huber-group']);
